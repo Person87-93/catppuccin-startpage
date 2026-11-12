@@ -45,276 +45,76 @@ const default_configuration = {
   openLastVisitedTab: true,
   tabs: [
     {
-      name: "myself",
+      name: "everyday",
       background_url: "src/img/banners/banner_14.gif",
       categories: [
-        {
-          name: "bookmarks",
-          links: [
-            {
-              name: "apple music",
-              url: "https://music.apple.com",
-              icon: "file-music",
-              icon_color: palette.green,
-            },
-            {
-              name: "spotify",
-              url: "https://open.spotify.com",
-              icon: "file-music",
-              icon_color: palette.peach,
-            },
-          ],
-        },
-        {
-          name: "workspace",
-          links: [
-            {
-              name: "gmail",
-              url: "https://mail.google.com",
-              icon: "brand-gmail",
-              icon_color: palette.orange,
-            },
-            {
-              name: "calendar",
-              url: "https://calendar.google.com",
-              icon: "calendar-filled",
-              icon_color: palette.peach,
-            },
-            {
-              name: "sheets",
-              url: "https://docs.google.com/spreadsheets",
-              icon: "table",
-              icon_color: palette.green,
-            },
-            {
-              name: "drive",
-              url: "https://drive.google.com/drive/home",
-              icon: "brand-google-drive",
-              icon_color: palette.blue,
-            },
-            {
-              name: "chatgpt",
-              url: "https://chat.openai.com",
-              icon: "brand-openai",
-              icon_color: palette.blue,
-            },
-          ],
-        },
-        {
-          name: "media",
-          links: [
-            {
-              name: "уп",
-              url: "https://www.pravda.com.ua",
-              icon: "news",
-              icon_color: palette.green,
-            },
-            {
-              name: "mil.in.ua",
-              url: "https://mil.in.ua",
-              icon: "badge-filled",
-              icon_color: palette.peach,
-            },
-            {
-              name: "куток",
-              url: "https://kutok.io",
-              icon: "border-radius",
-              icon_color: palette.red,
-            },
-            {
-              name: "ґрунт",
-              url: "https://grnt.media",
-              icon: "eye-bolt",
-              icon_color: palette.blue,
-            },
-            {
-              name: "village",
-              url: "https://www.village.com.ua",
-              icon: "home-2",
-              icon_color: palette.mauve,
-            },
-          ],
-        },
+        { name: "social", links: [
+          { name: "TikTok", url: "https://www.tiktok.com", icon: "brand-tiktok", icon_color: palette.green },
+          { name: "Discord", url: "https://discord.com/app", icon: "brand-discord", icon_color: palette.blue },
+          { name: "Instagram", url: "https://www.instagram.com", icon: "brand-instagram", icon_color: palette.mauve },
+        ] },
+        { name: "general workspace", links: [
+          { name: "Gmail", url: "https://mail.google.com", icon: "brand-gmail", icon_color: palette.red },
+          { name: "Google Calendar", url: "https://calendar.google.com", icon: "calendar-event", icon_color: palette.blue },
+          { name: "Sheets", url: "https://docs.google.com/spreadsheets", icon: "table", icon_color: palette.green },
+          { name: "Drive", url: "https://drive.google.com/drive/home", icon: "brand-google-drive", icon_color: palette.yellow },
+          { name: "ChatGPT", url: "https://chatgpt.com", icon: "brand-openai", icon_color: palette.teal },
+        ] },
+        { name: "music", links: [
+          { name: "Apple Music", url: "https://music.apple.com", icon: "brand-apple", icon_color: palette.red },
+          { name: "Spotify", url: "https://open.spotify.com", icon: "brand-spotify", icon_color: palette.green },
+        ] },
       ],
     },
     {
-      name: "dev",
+      name: "entertainment",
       background_url: "src/img/banners/banner_07.gif",
       categories: [
-        {
-          name: "development",
-          links: [
-            {
-              name: "github",
-              url: "https://github.com",
-              icon: "brand-github",
-              icon_color: palette.green,
-            },
-            {
-              name: "stackoverflow",
-              url: "https://stackoverflow.com",
-              icon: "brand-stackoverflow",
-              icon_color: palette.peach,
-            },
-            {
-              name: "duckdb",
-              url: "https://app.motherduck.com",
-              icon: "file-type-sql",
-              icon_color: palette.red,
-            },
-            {
-              name: "collab",
-              url: "https://colab.research.google.com",
-              icon: "notebook",
-              icon_color: palette.mauve,
-            },
-          ],
-        },
-        {
-          name: "challenges",
-          links: [
-            {
-              name: "kaggle",
-              url: "https://www.kaggle.com",
-              icon: "brain",
-              icon_color: palette.green,
-            },
-            {
-              name: "leetcode",
-              url: "https://leetcode.com",
-              icon: "code-plus",
-              icon_color: palette.peach,
-            },
-            {
-              name: "exercism",
-              url: "https://exercism.org",
-              icon: "code-minus",
-              icon_color: palette.red,
-            },
-            {
-              name: "aoc",
-              url: "https://adventofcode.com",
-              icon: "brand-linktree",
-              icon_color: palette.blue,
-            },
-          ],
-        },
-        {
-          name: "resources",
-          links: [
-            {
-              name: "dou",
-              url: "https://dou.ua",
-              icon: "brand-prisma",
-              icon_color: palette.green,
-            },
-            {
-              name: "hackernews",
-              url: "https://news.ycombinator.com",
-              icon: "brand-redhat",
-              icon_color: palette.peach,
-            },
-            {
-              name: "uber engineering",
-              url: "https://www.uber.com/en-GB/blog/london/engineering",
-              icon: "brand-uber",
-              icon_color: palette.red,
-            },
-            {
-              name: "netflix tech blog",
-              url: "https://netflixtechblog.com",
-              icon: "brand-netflix",
-              icon_color: palette.blue,
-            },
-          ],
-        },
+        { name: "gaming", links: [
+          { name: "Xbox Cloud Gaming", url: "https://www.xbox.com/en-us/play", icon: "brand-xbox", icon_color: palette.green },
+          { name: "Steam Store", url: "https://store.steampowered.com", icon: "brand-steam", icon_color: palette.blue },
+          { name: "Epic Games Store", url: "https://store.epicgames.com", icon: "brand-fortnite", icon_color: palette.mauve },
+          { name: "Poki", url: "https://poki.com", icon: "device-gamepad", icon_color: palette.yellow },
+        ] },
+        { name: "streaming", links: [
+          { name: "Tubi", url: "https://tubitv.com", icon: "device-tv", icon_color: palette.yellow },
+          { name: "YouTube", url: "https://www.youtube.com", icon: "brand-youtube", icon_color: palette.red },
+          { name: "Pluto TV", url: "https://pluto.tv", icon: "device-tv", icon_color: palette.blue },
+        ] },
+        { name: "school", links: [
+          { name: "Clever", url: "https://clever.com/in/", icon: "school", icon_color: palette.blue },
+          { name: "Schoology", url: "https://app.schoology.com", icon: "chalkboard", icon_color: palette.green },
+          { name: "PowerSchool", url: "https://www.powerschool.com", icon: "building-community", icon_color: palette.red },
+          { name: "Desmos", url: "https://www.desmos.com/calculator", icon: "chart-line", icon_color: palette.orange },
+          { name: "Khan Academy", url: "https://www.khanacademy.org", icon: "book-2", icon_color: palette.teal },
+        ] },
       ],
     },
     {
-      name: "chi ll",
+      name: "technical",
       background_url: "src/img/banners/banner_15.gif",
       categories: [
-        {
-          name: "social media",
-          links: [
-            {
-              name: "tiktok",
-              url: "https://www.tiktok.com",
-              icon: "brand-tiktok",
-              icon_color: palette.green,
-            },
-            {
-              name: "discord",
-              url: "https://www.discord.com",
-              icon: "brand-discord",
-              icon_color: palette.peach,
-            },
-            {
-              name: "instagram",
-              url: "https://www.instagram.com",
-              icon: "brand-instagram  ",
-              icon_color: palette.red,
-            },
-          ],
-        },
-        {
-          name: "gaming",
-          links: [
-            {
-              name: "cloud gaming",
-              url: "https://www.xbox.com/en-us/play",
-              icon: "device-gamepad",
-              icon_color: palette.green,
-            },
-            {
-              name: "steam",
-              url: "https://store.steampowered.com",
-              icon: "brand-steam",
-              icon_color: palette.peach,
-            },
-            {
-              name: "epicgames",
-              url: "https://store.epicgames.com",
-              icon: "brand-fortnite",
-              icon_color: palette.red,
-            },
-            {
-              name: "poki",
-              url: "https://www.poki.com",
-              icon: "brand-poki",
-              icon_color: palette.blue,
-            },
-          ],
-        },
-        {
-          name: "video",
-          links: [
-            {
-              name: "tubi",
-              url: "https://tubi.tv",
-              icon: "brand-tubi",
-              icon_color: palette.green,
-            },
-            {
-              name: "youtube",
-              url: "https://www.youtube.com",
-              icon: "brand-youtube",
-              icon_color: palette.peach,
-            },
-            {
-              name: "pluto",
-              url: "https://www.pluto.tv",
-              icon: "brand-pluto",
-              icon_color: palette.red,
-            },
-            {
-              name: "netflix",
-              url: "https://www.netflix.com",
-              icon: "brand-netflix",
-              icon_color: palette.red,
-            },
-          ],
-        },
+        { name: "development", links: [
+          { name: "GitHub", url: "https://github.com", icon: "brand-github", icon_color: palette.green },
+          { name: "Stack Overflow", url: "https://stackoverflow.com", icon: "brand-stackoverflow", icon_color: palette.orange },
+          { name: "MDN", url: "https://developer.mozilla.org", icon: "book-2", icon_color: palette.blue },
+          { name: "Microsoft Learn", url: "https://learn.microsoft.com", icon: "brand-windows", icon_color: palette.teal },
+          { name: "VS Code", url: "https://code.visualstudio.com", icon: "brand-vscode", icon_color: palette.blue },
+        ] },
+        { name: "robotics & engineering", links: [
+          { name: "VEX Robotics", url: "https://www.vexrobotics.com", icon: "robot", icon_color: palette.red },
+          { name: "VEX Forum", url: "https://www.vexforum.com", icon: "messages", icon_color: palette.blue },
+          { name: "VEXcode", url: "https://code.vex.com", icon: "code", icon_color: palette.green },
+          { name: "RobotEvents", url: "https://www.robotevents.com", icon: "calendar-event", icon_color: palette.orange },
+          { name: "REC Foundation", url: "https://recf.org", icon: "building-store", icon_color: palette.mauve },
+        ] },
+        { name: "cybersecurity & learning", links: [
+          { name: "TryHackMe", url: "https://tryhackme.com", icon: "shield-lock", icon_color: palette.red },
+          { name: "picoCTF", url: "https://picoctf.org", icon: "flag-code", icon_color: palette.green },
+          { name: "Cisco Skills for All", url: "https://skillsforall.com", icon: "network", icon_color: palette.blue },
+          { name: "OverTheWire", url: "https://overthewire.org/wargames", icon: "terminal-2", icon_color: palette.mauve },
+          { name: "Wireshark", url: "https://www.wireshark.org", icon: "wifi", icon_color: palette.teal },
+        ] },
       ],
     },
   ],
