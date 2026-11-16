@@ -67,6 +67,8 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
    - Update the number of tabs and their banners
    - Update bookmarks and quick links for those you use most
 
+The weather widget's OpenWeatherMap API key is stored in the current browser's local storage, not in `userconfig.js` or the repository. Right-click the weather widget to add or remove the key. The key is sent to OpenWeatherMap when fetching weather; use a key with appropriate restrictions and rotate it if it is exposed.
+
 > [!TIP]
 > You can find icons for your bookmarks using [`tabler-icons`](https://tabler.io/icons).
 >

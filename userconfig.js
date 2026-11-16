@@ -11,9 +11,6 @@ const default_configuration = {
   temperature: {
     location: "London",
     scale: "C",
-    // Optional OpenWeatherMap API key, get a free one at https://openweathermap.org/api
-    // Leave empty to keep the placeholder and skip the network request
-    appId: "",
   },
   clock: {
     format: "k:i p",

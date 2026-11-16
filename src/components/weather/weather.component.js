@@ -48,6 +48,34 @@ class Weather extends Component {
    */
   setEvents() {
     this.onclick = this.swapScale;
+    this.oncontextmenu = (event) => {
+      event.preventDefault();
+      this.configureApiKey();
+    };
+  }
+
+  /**
+   * Configure the OpenWeatherMap key for this browser only.
+   * The key is kept outside the shareable page configuration.
+   */
+  configureApiKey() {
+    const currentKey = localStorage.getItem("openweatherApiKey") || "";
+    const appId = prompt(
+      "OpenWeather API key (saved only in this browser; leave blank to remove):",
+      currentKey,
+    );
+
+    if (appId === null) return;
+
+    const trimmedKey = appId.trim();
+    if (trimmedKey) localStorage.setItem("openweatherApiKey", trimmedKey);
+    else localStorage.removeItem("openweatherApiKey");
+
+    this.weatherForecast = new WeatherForecastClient(
+      this.location,
+      trimmedKey,
+    );
+    this.setWeather();
   }
 
   /**
@@ -56,7 +84,10 @@ class Weather extends Component {
   setDependencies() {
     this.location = CONFIG.temperature.location;
     this.temperatureScale = CONFIG.temperature.scale;
-    this.weatherForecast = new WeatherForecastClient(this.location, CONFIG.temperature.appId);
+    this.weatherForecast = new WeatherForecastClient(
+      this.location,
+      localStorage.getItem("openweatherApiKey"),
+    );
   }
 
   /**
