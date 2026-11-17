@@ -166,7 +166,7 @@ class ShortcutTools extends Component {
       .link-rows { display: grid; gap: 12px; }
       .link-row {
         display: grid;
-        grid-template-columns: minmax(100px, 1fr) minmax(160px, 1.5fr) 40px minmax(110px, .9fr) 36px;
+        grid-template-columns: minmax(100px, 1fr) minmax(160px, 1.5fr) minmax(150px, .9fr) 36px;
         gap: 8px;
         align-items: center;
         padding: 12px;
@@ -174,16 +174,48 @@ class ShortcutTools extends Component {
         border-radius: 8px;
       }
 
-      .link-row input, .link-row select { width: 100%; }
+      .link-row input { width: 100%; }
+      .icon-picker { position: relative; min-width: 0; }
+      .icon-picker-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        text-align: left;
+      }
+      .icon-picker-toggle i { color: ${CONFIG.palette.blue}; font-size: 19px; }
+      .icon-picker-toggle .icon-picker-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .icon-picker-options {
+        position: absolute;
+        z-index: 2;
+        top: calc(100% + 6px);
+        right: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 4px;
+        width: min(330px, 75vw);
+        max-height: 260px;
+        overflow: auto;
+        padding: 8px;
+        border: 1px solid ${CONFIG.palette.surface1};
+        border-radius: 8px;
+        background: ${CONFIG.palette.base};
+        box-shadow: 0 10px 30px #0008;
+      }
+      .icon-picker-options[hidden] { display: none; }
+      .icon-option { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px; text-align: left; font-size: 12px; }
+      .icon-option i { color: ${CONFIG.palette.blue}; font-size: 18px; }
+      .icon-option[aria-selected="true"] { background: ${CONFIG.palette.surface1}; }
       .editor-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-top: 14px; }
       .saved-link { justify-content: space-between; }
 
       @media (max-width: 650px) {
         .shortcut-panel { padding: 18px; }
-        .link-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 36px 36px; }
-        .link-row .link-icon-select { grid-column: 1 / 3; }
-        .link-row .link-row-preview { grid-column: 3; grid-row: 1; }
-        .link-row .remove-row { grid-column: 4; grid-row: 1; }
+        .link-row { grid-template-columns: minmax(0, 1fr) 36px; }
+        .link-row .link-name-input, .link-row .link-url-input, .link-row .icon-picker { grid-column: 1; }
+        .link-row .remove-row { grid-column: 2; grid-row: 1; }
       }
     `;
   }
@@ -242,12 +274,21 @@ class ShortcutTools extends Component {
 
   setEvents() {
     this.refs.overlay.addEventListener("click", (event) => {
+      if (!event.target.closest(".icon-picker")) {
+        this.refs.linkRows.querySelectorAll(".icon-picker-options").forEach((menu) => { menu.hidden = true; });
+      }
       if (event.target === this.refs.overlay || event.target.closest("[data-close]")) this.close();
     });
 
     this.refs.overlay.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
+        const openMenu = this.refs.linkRows.querySelector(".icon-picker-options:not([hidden])");
+        if (openMenu) {
+          openMenu.hidden = true;
+          openMenu.previousElementSibling.focus();
+          return;
+        }
         this.close();
       }
     });
@@ -258,15 +299,24 @@ class ShortcutTools extends Component {
     this.refs.linkForm.addEventListener("submit", (event) => this.saveLinks(event));
     this.shadow.querySelector("#add-link-row").addEventListener("click", () => this.addLinkRow());
     this.refs.linkRows.addEventListener("click", (event) => {
+      const toggle = event.target.closest(".icon-picker-toggle");
+      if (toggle) {
+        const menu = toggle.nextElementSibling;
+        const shouldOpen = menu.hidden;
+        this.refs.linkRows.querySelectorAll(".icon-picker-options").forEach((item) => { item.hidden = true; });
+        menu.hidden = !shouldOpen;
+        return;
+      }
+
+      const option = event.target.closest(".icon-option");
+      if (option) {
+        this.selectIcon(option);
+        return;
+      }
+
       if (event.target.closest(".remove-row")) {
         const rows = this.refs.linkRows.querySelectorAll(".link-row");
         if (rows.length > 1) event.target.closest(".link-row").remove();
-      }
-    });
-    this.refs.linkRows.addEventListener("change", (event) => {
-      if (event.target.matches(".link-icon-select")) {
-        const preview = event.target.closest(".link-row").querySelector(".link-row-preview");
-        preview.className = `ti ti-${event.target.value || "link"} link-row-preview`;
       }
     });
     this.refs.savedLinks.addEventListener("click", (event) => {
@@ -418,15 +468,50 @@ class ShortcutTools extends Component {
     url.placeholder = "https://example.com";
     url.setAttribute("aria-label", "Link address");
 
-    const iconPreview = document.createElement("i");
-    iconPreview.className = "ti ti-link link-row-preview";
-    iconPreview.setAttribute("aria-hidden", "true");
+    const iconInput = document.createElement("input");
+    iconInput.type = "hidden";
+    iconInput.className = "link-icon-select";
 
-    const icon = document.createElement("select");
-    icon.className = "link-icon-select";
-    icon.setAttribute("aria-label", "Link icon");
-    icon.add(new Option("No icon", ""));
-    QUICK_LINK_ICONS.forEach((name) => icon.add(new Option(name, name)));
+    const picker = document.createElement("div");
+    picker.className = "icon-picker";
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "icon-picker-toggle";
+    toggle.setAttribute("aria-label", "Choose an icon");
+    toggle.setAttribute("aria-haspopup", "listbox");
+    const preview = document.createElement("i");
+    preview.className = "ti ti-link";
+    preview.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "icon-picker-label";
+    label.textContent = "Choose an icon";
+    toggle.append(preview, label);
+
+    const options = document.createElement("div");
+    options.className = "icon-picker-options";
+    options.hidden = true;
+    options.setAttribute("role", "listbox");
+    options.setAttribute("aria-label", "Available icons");
+    [{ name: "No icon", value: "" }, ...QUICK_LINK_ICONS.map((name) => ({ name, value: name }))]
+      .forEach(({ name, value }) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "icon-option";
+        option.dataset.icon = value;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", "false");
+
+        const icon = document.createElement("i");
+        icon.className = `ti ti-${value || "ban"}`;
+        icon.setAttribute("aria-hidden", "true");
+        const optionLabel = document.createElement("span");
+        optionLabel.textContent = name;
+        option.append(icon, optionLabel);
+        options.append(option);
+      });
+
+    picker.append(toggle, options);
 
     const remove = document.createElement("button");
     remove.type = "button";
@@ -434,9 +519,25 @@ class ShortcutTools extends Component {
     remove.textContent = "×";
     remove.setAttribute("aria-label", "Remove link row");
 
-    row.append(name, url, iconPreview, icon, remove);
+    row.append(name, url, iconInput, picker, remove);
     this.refs.linkRows.append(row);
     name.focus();
+  }
+
+  selectIcon(option) {
+    const row = option.closest(".link-row");
+    const value = option.dataset.icon;
+    row.querySelector(".link-icon-select").value = value;
+
+    const toggle = row.querySelector(".icon-picker-toggle");
+    toggle.querySelector("i").className = `ti ti-${value || "ban"}`;
+    toggle.querySelector(".icon-picker-label").textContent = value || "No icon";
+    toggle.setAttribute("aria-label", value ? `Selected icon: ${value}` : "No icon selected");
+    row.querySelectorAll(".icon-option").forEach((item) =>
+      item.setAttribute("aria-selected", String(item === option)),
+    );
+    row.querySelector(".icon-picker-options").hidden = true;
+    toggle.focus();
   }
 
   saveLinks(event) {
