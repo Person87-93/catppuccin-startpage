@@ -277,9 +277,8 @@ class Statusbar extends Component {
   handleWheelScroll(event) {
     if (!event) return;
 
-    let { target, wheelDelta } = event;
-
-    if (target.shadow && target.shadow.activeElement) return;
+    const { wheelDelta } = event;
+    if (getDeepActiveElement() !== document.body) return;
 
     let activeTab = -1;
     this.refs.tabs.forEach((tab, index) => {
@@ -302,9 +301,8 @@ class Statusbar extends Component {
   handleKeyPress(event) {
     if (!event) return;
 
-    let { target, key } = event;
-
-    if (target.shadow && target.shadow.activeElement) return;
+    const { key } = event;
+    if (getDeepActiveElement() !== document.body) return;
 
     // Activate tab by number key (1-5)
     if (Number.isInteger(parseInt(key)) && key <= this.externalRefs.categories.length) {

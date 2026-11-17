@@ -69,6 +69,17 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 
 The weather widget's OpenWeatherMap API key is stored in the current browser's local storage, not in `userconfig.js` or the repository. Right-click the weather widget to add or remove the key. When a key is configured, the page requests your browser location as it loads and uses it for the weather lookup; if location access is unavailable or denied, it uses the configured fallback city. Coordinates and the key are sent to OpenWeatherMap for each lookup. Use a key with appropriate restrictions and rotate it if it is exposed.
 
+### Keyboard shortcuts
+
+- `s`: open search
+- `/`: search and open a saved link
+- `?`: show the shortcut guide
+- `b`: add or remove browser-local quick links, including an optional Tabler icon
+- `g`, `m`, `y`: open Gmail, Apple Music, and YouTube in a new tab
+- `1`–`5`: switch start-page tabs
+
+Shortcuts do not run while you are typing in a field. Quick links added with `b` are saved in this browser only.
+
 > [!TIP]
 > You can find icons for your bookmarks using [`tabler-icons`](https://tabler.io/icons).
 >

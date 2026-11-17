@@ -34,6 +34,12 @@ const default_configuration = {
   },
   keybindings: {
     "s": "search-bar",
+    "?": "shortcuts-help",
+    "/": "command-palette",
+    "b": "link-editor",
+    "g": "open-gmail",
+    "m": "open-apple-music",
+    "y": "open-youtube",
   },
   disabled: [],
   localIcons: true,

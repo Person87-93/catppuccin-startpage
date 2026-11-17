@@ -15,10 +15,11 @@ class Links extends Component {
    */
   static getIcon(link) {
     const defaultColor = CONFIG.palette.base;
+    const icon = /^[a-z0-9-]+$/i.test(link.icon || "") ? link.icon : "link";
 
     return link.icon
-      ? `<i class="ti ti-${link.icon} link-icon"
-            style="color: ${link.icon_color ?? defaultColor}"></i>`
+      ? `<i class="ti ti-${escapeHTML(icon)} link-icon"
+            style="color: ${escapeHTML(link.icon_color ?? defaultColor)}"></i>`
       : "";
   }
 
@@ -42,9 +43,9 @@ class Links extends Component {
               .map(
                 (link) => `
                   <div class="link-info">
-                    <a href="${link.url}" target="_blank">
+                    <a href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer">
                       ${Links.getIcon(link)}
-                      ${link.name ? `<p class="link-name">${link.name}</p>` : ""}
+                      ${link.name ? `<p class="link-name">${escapeHTML(link.name)}</p>` : ""}
                     </a>
                 </div>`,
               )
@@ -107,7 +108,7 @@ class Tabs extends Component {
    */
   constructor() {
     super();
-    this.tabs = CONFIG.tabs;
+    this.tabs = getStartpageTabs();
   }
 
   /**

@@ -47,6 +47,12 @@ class Config {
     tabs: [],
     keybindings: {
       "s": "search-bar",
+      "?": "shortcuts-help",
+      "/": "command-palette",
+      "b": "link-editor",
+      "g": "open-gmail",
+      "m": "open-apple-music",
+      "y": "open-youtube",
     }
   };
 
@@ -130,10 +136,14 @@ class Config {
    * @returns {void}
    */
   setKeybindings() {
-    document.addEventListener("keydown", ({ key }) => {
-      if (document.activeElement !== document.body) return;
+    document.addEventListener("keydown", (event) => {
+      if (getDeepActiveElement() !== document.body || event.ctrlKey || event.altKey || event.metaKey) return;
 
-      if (key in this.keybindings) Actions.activate(this.keybindings[key]);
+      const action = this.keybindings[event.key];
+      if (action) {
+        event.preventDefault();
+        Actions.activate(action);
+      }
     });
   }
 

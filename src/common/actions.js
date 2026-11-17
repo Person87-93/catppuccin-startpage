@@ -5,6 +5,19 @@ class Actions {
    * @returns {*}
    */
   static activate(componentName) {
-    return RenderedComponents[componentName].activate();
+    const component = RenderedComponents[componentName];
+    if (component) return component.activate();
+
+    const quickLinks = {
+      "open-gmail": "https://mail.google.com/",
+      "open-apple-music": "https://music.apple.com/",
+      "open-youtube": "https://www.youtube.com/",
+    };
+
+    if (quickLinks[componentName]) {
+      return window.open(quickLinks[componentName], "_blank", "noopener,noreferrer");
+    }
+
+    return RenderedComponents["shortcut-tools"]?.open(componentName);
   }
 }

@@ -1,5 +1,21 @@
 const { parse, stringify } = JSON;
 
+const escapeHTML = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+})[character]);
+
+const getDeepActiveElement = () => {
+  let activeElement = document.activeElement;
+  while (activeElement?.shadowRoot?.activeElement) {
+    activeElement = activeElement.shadowRoot.activeElement;
+  }
+  return activeElement;
+};
+
 /**
  * Utility for querying DOM elements using document.querySelector(All)
  * Returns a single element or an array, depending on the options provided
