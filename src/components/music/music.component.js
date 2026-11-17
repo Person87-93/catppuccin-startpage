@@ -15,9 +15,12 @@ class MusicControl extends Component {
     return `
       .music-button { height: 100%; display: flex; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: ${CONFIG.palette.text}; font: 300 9pt 'Roboto', sans-serif; cursor: pointer; white-space: nowrap; }
       .music-button i { color: ${CONFIG.palette.mauve}; font-size: 14pt; }
-      .player { position: fixed; z-index: 40; right: 16px; bottom: 48px; width: min(340px, calc(100vw - 32px)); padding: 16px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 12px 32px rgb(0 0 0 / 35%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 13px 'Roboto', sans-serif; }
-      .player[hidden] { display: none; }
+      .player-dialog { position: fixed; inset: auto 16px 48px auto; width: min(340px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: min(90vh, 600px); margin: 0; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
+      .player-dialog::backdrop { background: transparent; }
+      .player { width: 100%; max-height: min(90vh, 600px); overflow: auto; padding: 16px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 12px 32px rgb(0 0 0 / 35%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 13px 'Roboto', sans-serif; }
+      .player-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
       .track { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; margin-bottom: 4px; }
+      .close-player { flex: none; padding: 3px !important; }
       .source { color: ${CONFIG.palette.subtext0}; font-size: 11px; margin-bottom: 12px; }
       .controls { display: grid; grid-template-columns: 36px 1fr; align-items: center; gap: 8px; }
       .player button { border: 0; border-radius: 7px; padding: 7px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
@@ -34,8 +37,9 @@ class MusicControl extends Component {
 
   template() {
     return `<button class="music-button" type="button" aria-expanded="false" title="Open this page's music player"><i class="material-icons">music_note</i><span>Music</span></button>
-      <section class="player" hidden aria-label="Music player">
-        <div class="track">Looking for music in other tabs…</div>
+      <dialog class="player-dialog" aria-label="Music player">
+       <section class="player">
+        <div class="player-heading"><div class="track">Looking for music in other tabs…</div><button class="close-player" type="button" aria-label="Close music player"><i class="material-icons">close</i></button></div>
         <div class="source">Media control extension not connected</div>
         <audio preload="metadata"></audio>
         <div class="controls"><button class="play" type="button" aria-label="Play" disabled><i class="material-icons">play_arrow</i></button><input class="seek" type="range" min="0" max="1000" value="0" aria-label="Track position" disabled></div>
@@ -43,7 +47,8 @@ class MusicControl extends Component {
         <div class="volume"><i class="material-icons">volume_down</i><input class="volume-range" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></div>
         <div class="file-row"><label><button type="button">Choose audio</button><input class="file" type="file" accept="audio/*"></label><button class="clear" type="button" disabled>Clear</button></div>
         <p class="hint">Connect the optional browser extension to control media in other tabs, or choose an audio file to play here.</p>
-      </section>`;
+       </section>
+      </dialog>`;
   }
 
   connectedCallback() {
@@ -53,7 +58,7 @@ class MusicControl extends Component {
   bindPlayer() {
     const query = (selector) => this.shadow.querySelector(selector);
     const audio = query("audio");
-    const panel = query(".player");
+    const panel = query(".player-dialog");
     const toggle = query(".music-button");
     const play = query(".play");
     const seek = query(".seek");
@@ -72,16 +77,24 @@ class MusicControl extends Component {
     });
 
     toggle.onclick = () => {
-      panel.hidden = !panel.hidden;
-      toggle.setAttribute("aria-expanded", String(!panel.hidden));
-      if (panel.hidden) {
-        clearInterval(this.refreshTimer);
-        this.refreshTimer = null;
+      if (panel.open) {
+        panel.close();
       } else {
+        panel.showModal();
+        toggle.setAttribute("aria-expanded", "true");
         this.refreshRemote();
         this.refreshTimer = window.setInterval(() => this.refreshRemote(), 2500);
       }
     };
+    panel.addEventListener("close", () => {
+      toggle.setAttribute("aria-expanded", "false");
+      if (this.refreshTimer) {
+        clearInterval(this.refreshTimer);
+        this.refreshTimer = null;
+      }
+    });
+    query(".close-player").onclick = () => panel.close();
+    panel.addEventListener("click", (event) => { if (event.target === panel) panel.close(); });
     file.onchange = () => {
       const selected = file.files?.[0];
       if (!selected) return;
@@ -141,7 +154,7 @@ class MusicControl extends Component {
       seek.disabled = true;
       query(".clear").disabled = true;
       this.localMode = false;
-      if (!panel.hidden) this.refreshRemote();
+      if (panel.open) this.refreshRemote();
     };
     window.addEventListener("beforeunload", () => this.releaseAudioUrl(), { once: true });
     this.refreshRemote();

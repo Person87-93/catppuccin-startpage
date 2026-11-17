@@ -142,6 +142,12 @@ class Statusbar extends Component {
           gap: 0;
       }
 
+      .widgets current-time { display: var(--startpage-show-clock, inline-flex); }
+      .widgets weather-forecast { display: var(--startpage-show-weather, inline-flex); }
+      .widgets battery-status { display: var(--startpage-show-battery, inline-flex); }
+      .widgets online-status { display: var(--startpage-show-online, inline-flex); }
+      .widgets music-control { display: var(--startpage-show-music, inline-flex); }
+
       .widgets:hover .edit {
           margin: 0;
       }

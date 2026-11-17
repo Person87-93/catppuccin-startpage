@@ -75,7 +75,7 @@ class Category extends Component {
    * @returns {string} CSS style attribute string
    */
   static getBackgroundStyle(url) {
-    return `style="background-image: url(${url}); background-repeat: no-repeat; background-size: contain;"`;
+    return `style="background-image: url(${url}); background-repeat: no-repeat; background-size: contain; background-color: rgb(0 0 0 / var(--startpage-wallpaper-dim, 0)); background-blend-mode: multiply;"`;
   }
 
   /**
@@ -151,7 +151,7 @@ class Tabs extends Component {
 
       #panels {
           border-radius: var(--startpage-radius, 10px);
-          width: 94%;
+          width: var(--startpage-panel-width, 94%);
           max-width: 1500px;
           height: min(60vh, 600px);
           min-height: min(440px, 55vh);
@@ -235,6 +235,7 @@ class Tabs extends Component {
           color: ${CONFIG.palette.text};
           text-decoration: none;
           font: 700 18px 'Roboto', sans-serif;
+          font-size: calc(18px * var(--startpage-text-scale, 1));
           transition: all .2s;
           display: inline-flex;
           align-items: center;
