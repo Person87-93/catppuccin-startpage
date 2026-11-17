@@ -25,6 +25,11 @@ class AppearanceSettings extends Component {
       .widget-switches { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
       .widget-switches label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
       .widget-switches input { accent-color: var(--startpage-accent, var(--accent)); }
+      .website-settings { margin-top: 12px; padding-top: 8px; border-top: 1px solid ${CONFIG.palette.surface1}; }
+      .website-settings textarea { width: 100%; min-height: 76px; resize: vertical; box-sizing: border-box; padding: 8px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 6px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; font: 12px monospace; }
+      .website-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+      .website-grid .control { margin: 8px 0; }
+      .website-colour { display: flex; align-items: center; justify-content: space-between; }
       .help { color: ${CONFIG.palette.subtext0}; font-size: 12px; line-height: 1.5; }
       .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
       .actions button { border: 0; border-radius: 6px; padding: 9px 13px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
@@ -52,6 +57,23 @@ class AppearanceSettings extends Component {
             <label><input id="show-online" type="checkbox"> Online status</label>
             <label><input id="show-music" type="checkbox"> Music button</label>
           </div>
+          <h3 class="section-title">Website appearance</h3>
+          <div class="website-settings">
+            <div class="control"><label><span>Enable website styling</span><input id="websites-enabled" type="checkbox"></label></div>
+            <p class="help">Applies to ordinary HTTP and HTTPS pages while the companion extension is installed. Press Alt+Shift+P on a page, then click an element to hide it. Click the shortcut again to cancel.</p>
+            <div class="website-grid">
+              <div class="control website-colour"><label for="websites-background">Background</label><input id="websites-background" type="color"></div>
+              <div class="control website-colour"><label for="websites-text">Text</label><input id="websites-text" type="color"></div>
+              <div class="control website-colour"><label for="websites-accent">Links</label><input id="websites-accent" type="color"></div>
+              <div class="control website-colour"><label for="websites-border">Borders</label><input id="websites-border" type="color"></div>
+            </div>
+            <div class="control"><label for="websites-opacity">Panel transparency <output data-value="websites-opacity"></output></label><input id="websites-opacity" type="range" min="55" max="100" value="94"></div>
+            <div class="control"><label for="websites-blur">Panel blur <output data-value="websites-blur"></output></label><input id="websites-blur" type="range" min="0" max="16" value="0"></div>
+            <div class="control"><label for="websites-font">Typography</label><select id="websites-font"><option value="system">System</option><option value="arial">Arial</option><option value="roboto">Roboto</option><option value="georgia">Georgia</option></select></div>
+            <div class="control"><label for="websites-spacing">Page spacing</label><select id="websites-spacing"><option value="compact">Compact</option><option value="normal">Normal</option><option value="comfortable">Comfortable</option></select></div>
+            <div class="control"><label for="website-rules">Hidden elements by site</label><textarea id="website-rules" spellcheck="false" placeholder="example.com | .advertisement\nnews.example.com | #signup-banner"></textarea></div>
+            <p class="help website-status" role="status">Website styling settings are saved on this device. The companion extension applies them to pages.</p>
+          </div>
           <p class="help">Your appearance choices are saved in this browser only.</p>
           <div class="actions"><button type="button" class="reset">Reset defaults</button><button type="button" class="done">Done</button></div>
         </section>
@@ -73,6 +95,18 @@ class AppearanceSettings extends Component {
       spacing: "compact",
       accent: CONFIG.palette.mauve,
       widgets: { clock: true, weather: true, battery: true, online: true, music: true },
+      websiteAppearance: {
+        enabled: false,
+        background: CONFIG.palette.base,
+        text: CONFIG.palette.text,
+        accent: CONFIG.palette.blue,
+        border: CONFIG.palette.surface1,
+        opacity: 94,
+        blur: 0,
+        font: "system",
+        spacing: "normal",
+        hiddenElementsByHost: {},
+      },
     };
   }
 
@@ -80,7 +114,7 @@ class AppearanceSettings extends Component {
     try {
       const defaults = this.defaults();
       const saved = JSON.parse(localStorage.getItem(AppearanceSettings.storageKey) || "{}");
-      return { ...defaults, ...saved, widgets: { ...defaults.widgets, ...saved.widgets } };
+      return { ...defaults, ...saved, widgets: { ...defaults.widgets, ...saved.widgets }, websiteAppearance: { ...defaults.websiteAppearance, ...saved.websiteAppearance, hiddenElementsByHost: saved.websiteAppearance?.hiddenElementsByHost || {} } };
     } catch {
       return this.defaults();
     }
@@ -90,7 +124,51 @@ class AppearanceSettings extends Component {
     const dialog = this.shadow.querySelector(".settings-dialog");
     const toggle = this.shadow.querySelector(".settings-toggle");
     const controls = ["transparency", "roundness", "blur", "dim", "panel-width", "text-scale", "spacing", "accent"];
-    const update = () => {
+    const websiteControls = ["websites-background", "websites-text", "websites-accent", "websites-border", "websites-opacity", "websites-blur", "websites-font", "websites-spacing"];
+    const rulesInput = this.shadow.querySelector("#website-rules");
+    const websiteStatus = this.shadow.querySelector(".website-status");
+    let extensionSettingsRequest = null;
+    let extensionConnected = false;
+    let publishTimer = null;
+    let lastPublishedWebsiteAppearance = null;
+    window.addEventListener("message", (event) => {
+      if (event.source !== window || event.origin !== location.origin) return;
+      const message = event.data;
+      if (message?.type !== "startpage-site-settings-response" || message.requestId !== extensionSettingsRequest) return;
+      extensionConnected = Boolean(message.settings);
+      websiteStatus.textContent = extensionConnected
+        ? "Connected: website appearance settings sync to the companion extension."
+        : "Companion extension not detected. Local appearance settings are saved, but website styling will not apply until it is installed.";
+      const remoteRules = message.settings?.hiddenElementsByHost;
+      if (remoteRules && !rulesInput.dataset.edited) {
+        const mergedRules = { ...remoteRules };
+        Object.entries(parseHiddenRules(rulesInput.value)).forEach(([host, selectors]) => {
+          mergedRules[host] = [...new Set([...(mergedRules[host] || []), ...selectors])];
+        });
+        rulesInput.value = Object.entries(mergedRules).flatMap(([host, selectors]) => (selectors || []).map((selector) => `${host} | ${selector}`)).join("\n");
+        update();
+      }
+    });
+    const parseHiddenRules = (text) => {
+      const rules = {};
+      for (const line of text.split("\n")) {
+        if (!line.trim()) continue;
+        const separator = line.indexOf("|");
+        if (separator < 0) continue;
+        const host = line.slice(0, separator).trim().toLowerCase();
+        const selector = line.slice(separator + 1).trim();
+        try {
+          if (new URL(`https://${host}`).hostname !== host || !selector || selector.length > 512 || /[{};@\n\r]/.test(selector) || selector.includes("/*") || selector.includes("*/")) continue;
+          document.createElement("div").matches(selector);
+          rules[host] ||= [];
+          if (!rules[host].includes(selector) && rules[host].length < 50) rules[host].push(selector);
+        } catch {
+          // Ignore invalid hosts and CSS selectors rather than breaking the settings panel.
+        }
+      }
+      return rules;
+    };
+    const update = (publish = true) => {
       const settings = Object.fromEntries(controls.map((id) => [id, this.shadow.querySelector(`#${id}`).value]));
       const transparency = Math.min(100, Math.max(55, Number(settings.transparency)));
       const roundness = Math.min(28, Math.max(0, Number(settings.roundness)));
@@ -102,6 +180,18 @@ class AppearanceSettings extends Component {
         name,
         this.shadow.querySelector(`#show-${name}`).checked,
       ]));
+      const websiteAppearance = {
+        enabled: this.shadow.querySelector("#websites-enabled").checked,
+        background: this.shadow.querySelector("#websites-background").value,
+        text: this.shadow.querySelector("#websites-text").value,
+        accent: this.shadow.querySelector("#websites-accent").value,
+        border: this.shadow.querySelector("#websites-border").value,
+        opacity: Math.min(100, Math.max(55, Number(this.shadow.querySelector("#websites-opacity").value))),
+        blur: Math.min(16, Math.max(0, Number(this.shadow.querySelector("#websites-blur").value))),
+        font: this.shadow.querySelector("#websites-font").value,
+        spacing: this.shadow.querySelector("#websites-spacing").value,
+        hiddenElementsByHost: parseHiddenRules(rulesInput.value),
+      };
       const root = document.documentElement;
       root.style.setProperty("--startpage-opacity", `${transparency}%`);
       root.style.setProperty("--startpage-radius", `${roundness}px`);
@@ -120,8 +210,20 @@ class AppearanceSettings extends Component {
       this.shadow.querySelector('[data-value="blur"]').textContent = `${blur}px`;
       this.shadow.querySelector('[data-value="dim"]').textContent = `${dim}%`;
       this.shadow.querySelector('[data-value="panel-width"]').textContent = `${panelWidth}%`;
+      this.shadow.querySelector('[data-value="websites-opacity"]').textContent = `${websiteAppearance.opacity}%`;
+      this.shadow.querySelector('[data-value="websites-blur"]').textContent = `${websiteAppearance.blur}px`;
       this.shadow.querySelector('[data-value="text-scale"]').textContent = `${textScale}%`;
-      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ transparency, roundness, blur, dim, panelWidth, textScale, spacing: settings.spacing, accent: settings.accent, widgets }));
+      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ transparency, roundness, blur, dim, panelWidth, textScale, spacing: settings.spacing, accent: settings.accent, widgets, websiteAppearance }));
+      if (publish) {
+        const serializedWebsiteAppearance = JSON.stringify(websiteAppearance);
+        if (serializedWebsiteAppearance !== lastPublishedWebsiteAppearance) {
+          window.clearTimeout(publishTimer);
+          publishTimer = window.setTimeout(() => {
+            lastPublishedWebsiteAppearance = serializedWebsiteAppearance;
+            window.postMessage({ type: "startpage-site-settings", settings: websiteAppearance }, location.origin);
+          }, 300);
+        }
+      }
     };
 
     const settings = this.getSettings();
@@ -130,9 +232,23 @@ class AppearanceSettings extends Component {
     Object.entries(settings.widgets).forEach(([name, visible]) => {
       this.shadow.querySelector(`#show-${name}`).checked = visible;
     });
-    update();
+    this.shadow.querySelector("#websites-enabled").checked = settings.websiteAppearance.enabled;
+    ["background", "text", "accent", "border"].forEach((name) => { this.shadow.querySelector(`#websites-${name}`).value = settings.websiteAppearance[name]; });
+    this.shadow.querySelector("#websites-opacity").value = settings.websiteAppearance.opacity;
+    this.shadow.querySelector("#websites-blur").value = settings.websiteAppearance.blur;
+    this.shadow.querySelector("#websites-font").value = settings.websiteAppearance.font;
+    this.shadow.querySelector("#websites-spacing").value = settings.websiteAppearance.spacing;
+    rulesInput.value = Object.entries(settings.websiteAppearance.hiddenElementsByHost).flatMap(([host, selectors]) => (selectors || []).map((selector) => `${host} | ${selector}`)).join("\n");
+    update(false);
     controls.forEach((id) => this.shadow.querySelector(`#${id}`).addEventListener("input", update));
     Object.keys(settings.widgets).forEach((name) => this.shadow.querySelector(`#show-${name}`).addEventListener("change", update));
+    websiteControls.forEach((id) => {
+      const control = this.shadow.querySelector(`#${id}`);
+      control.addEventListener("input", update);
+      control.addEventListener("change", update);
+    });
+    this.shadow.querySelector("#websites-enabled").addEventListener("change", update);
+    rulesInput.addEventListener("input", () => { rulesInput.dataset.edited = "true"; update(); });
     toggle.onclick = () => { if (!dialog.open) dialog.showModal(); };
     this.shadow.querySelector(".close").onclick = () => dialog.close();
     this.shadow.querySelector(".done").onclick = () => dialog.close();
@@ -143,7 +259,20 @@ class AppearanceSettings extends Component {
       Object.entries(defaults.widgets).forEach(([name, visible]) => {
         this.shadow.querySelector(`#show-${name}`).checked = visible;
       });
+      this.shadow.querySelector("#websites-enabled").checked = defaults.websiteAppearance.enabled;
+      ["background", "text", "accent", "border"].forEach((name) => { this.shadow.querySelector(`#websites-${name}`).value = defaults.websiteAppearance[name]; });
+      this.shadow.querySelector("#websites-opacity").value = defaults.websiteAppearance.opacity;
+      this.shadow.querySelector("#websites-blur").value = defaults.websiteAppearance.blur;
+      this.shadow.querySelector("#websites-font").value = defaults.websiteAppearance.font;
+      this.shadow.querySelector("#websites-spacing").value = defaults.websiteAppearance.spacing;
+      rulesInput.value = "";
+      rulesInput.dataset.edited = "true";
       update();
     };
+    extensionSettingsRequest = `settings-${Date.now()}`;
+    window.postMessage({ type: "startpage-site-settings-get", requestId: extensionSettingsRequest }, location.origin);
+    window.setTimeout(() => {
+      if (!extensionConnected) websiteStatus.textContent = "Companion extension not detected. Local appearance settings are saved, but website styling will not apply until it is installed.";
+    }, 1800);
   }
 }

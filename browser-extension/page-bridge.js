@@ -6,6 +6,27 @@
   window.addEventListener("message", (event) => {
     const message = event.data;
     if (event.source !== window || event.origin !== location.origin) return;
+
+    if (message?.type === "startpage-site-settings-get" && typeof message.requestId === "string") {
+      chrome.runtime.sendMessage({ type: "startpage-site-settings-get" }, (response) => {
+        const error = chrome.runtime.lastError?.message;
+        window.postMessage({
+          type: "startpage-site-settings-response",
+          requestId: message.requestId,
+          settings: error ? null : response?.settings || null,
+        }, location.origin);
+      });
+      return;
+    }
+
+    if (message?.type === "startpage-site-settings" && message.settings && typeof message.settings === "object") {
+      chrome.runtime.sendMessage({ type: "startpage-site-settings", settings: message.settings }, () => {
+        // Read lastError so an unavailable extension does not produce an unhandled callback warning.
+        void chrome.runtime.lastError;
+      });
+      return;
+    }
+
     if (message?.type !== "startpage-media-request" || typeof message.requestId !== "string") return;
     const allowedActions = new Set(["getState", "play", "pause", "toggle", "seek", "volume"]);
     if (!allowedActions.has(message.action)) return;

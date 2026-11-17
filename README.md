@@ -57,6 +57,7 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 - Clock widget with 12/24-hour format and multiple time zones support
 - Browser battery and online status indicators, where supported
 - A local audio player and browser-local appearance settings
+- Optional browser-wide website colour, typography, spacing, and per-site element hiding through the companion Chromium extension
 - Local fonts mode for privacy and offline use (no Google Fonts CDN)
 
 ## 🪵 Usage
@@ -71,7 +72,7 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 
 The weather widget's OpenWeatherMap API key is stored in the current browser's local storage, not in `userconfig.js` or the repository. Right-click the weather widget to add or remove the key. When a key is configured, the page requests your browser location as it loads and uses it for the weather lookup; if location access is unavailable or denied, it uses the configured fallback city. Coordinates and the key are sent to OpenWeatherMap for each lookup. Use a key with appropriate restrictions and rotate it if it is exposed.
 
-The battery indicator depends on browser support for the Battery Status API. The online indicator reflects the browser's network status. By default, the music control plays an audio file you choose from this device. To control audio/video playing in other tabs, install the optional Chromium extension in [`browser-extension`](browser-extension/README.md). It needs website access to inspect and control media elements, and some protected or custom players may not work. Appearance controls for transparency, roundness, blur, wallpaper dimming, panel width, link text size, status bar spacing, accent colour, and visible widgets are saved in this browser only.
+The battery indicator depends on browser support for the Battery Status API. The online indicator reflects the browser's network status. By default, the music control plays an audio file you choose from this device. To control audio/video playing in other tabs or apply website appearance customizations, install the optional Chromium extension in [`browser-extension`](browser-extension/README.md). Website styling is off by default; when enabled, it can adjust colours, typography, spacing, panel transparency and blur, and hide selected elements per site. It needs HTTP/HTTPS site access for those features. Some protected or custom players may not work, and browser-internal pages cannot be customized. Startpage appearance controls for transparency, roundness, blur, wallpaper dimming, panel width, link text size, status bar spacing, accent colour, and visible widgets are saved in this browser only.
 
 ### Keyboard shortcuts
 

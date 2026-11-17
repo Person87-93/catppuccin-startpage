@@ -73,7 +73,177 @@ async function findPlayingMedia(sourceTabId) {
   return found[0] || null;
 }
 
+const websiteDefaults = {
+  enabled: false,
+  background: "#1e1e2e",
+  text: "#cdd6f4",
+  accent: "#89b4fa",
+  border: "#45475a",
+  opacity: 94,
+  blur: 0,
+  font: "system",
+  spacing: "normal",
+  hiddenElementsByHost: {},
+};
+
+function safeColour(value, fallback) {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+}
+
+function safeRules(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const rules = {};
+  Object.entries(value).slice(0, 100).forEach(([host, selectors]) => {
+    const normalHost = String(host).toLowerCase();
+    try {
+      if (new URL(`https://${normalHost}`).hostname !== normalHost || !Array.isArray(selectors)) return;
+    } catch {
+      return;
+    }
+    const validSelectors = [...new Set(selectors.filter((selector) => typeof selector === "string" && selector.trim() && selector.length <= 512 && !/[{};@\n\r]/.test(selector) && !selector.includes("/*") && !selector.includes("*/")).map((selector) => selector.trim()))].slice(0, 50);
+    if (validSelectors.length) rules[normalHost] = validSelectors;
+  });
+  return rules;
+}
+
+function safeWebsiteSettings(input, existing = websiteDefaults) {
+  const source = input && typeof input === "object" ? input : {};
+  return {
+    enabled: source.enabled === true,
+    background: safeColour(source.background, websiteDefaults.background),
+    text: safeColour(source.text, websiteDefaults.text),
+    accent: safeColour(source.accent, websiteDefaults.accent),
+    border: safeColour(source.border, websiteDefaults.border),
+    opacity: Math.max(55, Math.min(100, Number(source.opacity) || websiteDefaults.opacity)),
+    blur: Math.max(0, Math.min(16, Number(source.blur) || 0)),
+    font: ["system", "arial", "roboto", "georgia"].includes(source.font) ? source.font : "system",
+    spacing: ["compact", "normal", "comfortable"].includes(source.spacing) ? source.spacing : "normal",
+    hiddenElementsByHost: safeRules(source.hiddenElementsByHost ?? existing.hiddenElementsByHost),
+  };
+}
+
+function websiteCss(input, host) {
+  const settings = safeWebsiteSettings(input);
+  if (!settings.enabled) return "";
+  const fonts = { system: "system-ui, sans-serif", arial: "Arial, sans-serif", roboto: "Roboto, Arial, sans-serif", georgia: "Georgia, serif" };
+  const spacing = { compact: 1.35, normal: 1.55, comfortable: 1.75 };
+  const selectors = settings.hiddenElementsByHost[host] || [];
+  const hidden = selectors.map((selector) => `:is(${selector}) { display: none !important; }`).join("\n");
+  const [red, green, blue] = settings.background.slice(1).match(/.{2}/g).map((channel) => parseInt(channel, 16) / 255);
+  const scheme = (red * 0.2126 + green * 0.7152 + blue * 0.0722) < 0.5 ? "dark" : "light";
+  return `
+    html { color-scheme: ${scheme} !important; --startpage-site-background: ${settings.background}; --startpage-site-text: ${settings.text}; --startpage-site-accent: ${settings.accent}; --startpage-site-border: ${settings.border}; --startpage-site-opacity: ${settings.opacity}%; --startpage-site-blur: ${settings.blur}px; --startpage-site-font: ${fonts[settings.font]}; --startpage-site-line-height: ${spacing[settings.spacing]}; }
+    html, body { background-color: var(--startpage-site-background) !important; color: var(--startpage-site-text) !important; }
+    body, body button, body input, body textarea, body select { font-family: var(--startpage-site-font) !important; line-height: var(--startpage-site-line-height) !important; }
+    body :where(p, h1, h2, h3, h4, h5, h6, li, td, th, label, summary, blockquote, figcaption) { color: var(--startpage-site-text) !important; }
+    body :where(a, [role="link"]) { color: var(--startpage-site-accent) !important; }
+    body :where(button, input:not([type="checkbox"]):not([type="radio"]), textarea, select, [role="button"]) { color: var(--startpage-site-text) !important; border-color: var(--startpage-site-border) !important; background-color: color-mix(in srgb, var(--startpage-site-background) var(--startpage-site-opacity), transparent) !important; }
+    body :where(fieldset, hr, [role="separator"]) { border-color: var(--startpage-site-border) !important; }
+    body :where(main, [role="main"], article, aside, nav, header, footer, dialog) { border-color: var(--startpage-site-border) !important; background-color: color-mix(in srgb, var(--startpage-site-background) var(--startpage-site-opacity), transparent) !important; backdrop-filter: blur(var(--startpage-site-blur)) !important; }
+    ${hidden}
+  `;
+}
+
+const pickerCss = `
+  [data-startpage-picker-hover] { outline: 3px solid #89b4fa !important; outline-offset: 2px !important; cursor: crosshair !important; }
+  #startpage-picker-notice { position: fixed !important; z-index: 2147483647 !important; top: 12px !important; right: 12px !important; max-width: min(360px, calc(100vw - 24px)) !important; padding: 10px 14px !important; border: 1px solid #45475a !important; border-radius: 10px !important; background: #1e1e2e !important; color: #cdd6f4 !important; font: 14px/1.4 system-ui, sans-serif !important; box-shadow: 0 8px 30px #0008 !important; pointer-events: none !important; }
+`;
+
+async function updateTabAppearance(tabId, url, oldSettings, newSettings) {
+  let host;
+  try {
+    const parsed = new URL(url);
+    if (!/^https?:$/.test(parsed.protocol)) return;
+    host = parsed.hostname.toLowerCase();
+  } catch {
+    return;
+  }
+  const oldCss = websiteCss(oldSettings, host);
+  const newCss = websiteCss(newSettings, host);
+  try {
+    if (oldCss) await chrome.scripting.removeCSS({ target: { tabId }, css: oldCss, origin: "USER" });
+  } catch {
+    // The stylesheet may not have been injected in this document yet.
+  }
+  if (newCss) {
+    try {
+      await chrome.scripting.insertCSS({ target: { tabId }, css: newCss, origin: "USER" });
+    } catch {
+      // Browser-internal, protected, or navigated pages cannot always be styled.
+    }
+  }
+}
+
+async function updateOpenTabs(oldSettings, newSettings) {
+  const tabs = await chrome.tabs.query({});
+  await Promise.all(tabs.filter((tab) => tab.id && tab.url).map((tab) => updateTabAppearance(tab.id, tab.url, oldSettings, newSettings)));
+}
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local" || !changes.websiteAppearance) return;
+  const { oldValue, newValue } = changes.websiteAppearance;
+  updateOpenTabs(oldValue || websiteDefaults, newValue || websiteDefaults).catch(() => {});
+});
+
+async function saveWebsiteSettings(input) {
+  const { websiteAppearance = websiteDefaults } = await chrome.storage.local.get("websiteAppearance");
+  const settings = safeWebsiteSettings(input, websiteAppearance);
+  await chrome.storage.local.set({ websiteAppearance: settings });
+  return settings;
+}
+
+async function addHiddenElement(message, sender) {
+  let host;
+  try {
+    host = new URL(sender.url).hostname.toLowerCase();
+  } catch {
+    return { ok: false, error: "This page cannot be customised." };
+  }
+  if (!sender.tab?.id || host !== message.host || typeof message.selector !== "string" || !message.selector.trim() || message.selector.length > 512) {
+    return { ok: false, error: "The selected page element was invalid." };
+  }
+  const { websiteAppearance = websiteDefaults } = await chrome.storage.local.get("websiteAppearance");
+  const rules = safeRules(websiteAppearance.hiddenElementsByHost);
+  const selectors = rules[host] || [];
+  if (!selectors.includes(message.selector) && selectors.length < 50) selectors.push(message.selector);
+  rules[host] = selectors;
+  const settings = safeWebsiteSettings({ ...websiteAppearance, hiddenElementsByHost: rules }, websiteAppearance);
+  await chrome.storage.local.set({ websiteAppearance: settings });
+  return { ok: true };
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === "startpage-site-settings-get" && trustedStartpage(sender.url)) {
+    chrome.storage.local.get("websiteAppearance").then(({ websiteAppearance }) => {
+      sendResponse({ settings: websiteAppearance || websiteDefaults });
+    }).catch(() => sendResponse({ settings: null }));
+    return true;
+  }
+
+  if (message?.type === "startpage-site-settings" && trustedStartpage(sender.url) && sender.tab?.id) {
+    saveWebsiteSettings(message.settings).then(() => sendResponse({ ok: true })).catch((error) => sendResponse({ error: error.message }));
+    return true;
+  }
+
+  if (message?.type === "startpage-site-customizer-ready" && sender.tab?.id) {
+    chrome.storage.local.get("websiteAppearance").then(({ websiteAppearance }) => {
+      return updateTabAppearance(sender.tab.id, sender.url, null, websiteAppearance || websiteDefaults);
+    }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+
+  if (message?.type === "startpage-site-picker-css" && sender.tab?.id) {
+    const injection = { target: { tabId: sender.tab.id }, css: pickerCss, origin: "USER" };
+    const operation = message.active ? chrome.scripting.insertCSS(injection) : chrome.scripting.removeCSS(injection);
+    operation.then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+
+  if (message?.type === "startpage-site-hide-element") {
+    addHiddenElement(message, sender).then(sendResponse).catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   if (message?.type !== "startpage-media" || !trustedStartpage(sender.url) || !sender.tab?.id) return;
 
   (async () => {
