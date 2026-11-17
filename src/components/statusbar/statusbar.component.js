@@ -224,7 +224,6 @@ class Statusbar extends Component {
                 <div class="+ widgets col-end">
                     <current-time class="+ widget time-widget"></current-time>
                     <weather-forecast class="+ widget weather"></weather-forecast>
-                    <schoology-assignments class="+ widget schoology"></schoology-assignments>
                 </div>
             </cols>
         </div>`;

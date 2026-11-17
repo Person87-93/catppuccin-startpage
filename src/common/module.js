@@ -6,7 +6,6 @@ const components = {
   "status-bar": Statusbar,
   "current-time": Clock,
   "weather-forecast": Weather,
-  "schoology-assignments": SchoologyAssignments,
   "tabs-list": Tabs,
   "shortcut-tools": ShortcutTools,
 };
