@@ -5,6 +5,7 @@ class Weather extends Component {
     temperature: ".weather-temperature-value",
     condition: ".weather-condition-icon",
     scale: ".weather-temperature-scale",
+    location: ".weather-temperature-location",
   };
 
   // Weather condition mappings to Material Design icons and colours
@@ -230,6 +231,7 @@ class Weather extends Component {
     this.refs.temperature = this.convertScale(temperature);
     this.refs.condition = icon;
     this.refs.scale = this.temperatureScale;
+    this.refs.location = this.weather.location || this.location;
     this.refs.condition.classList.add(color);
   }
 
