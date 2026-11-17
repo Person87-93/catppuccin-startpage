@@ -55,6 +55,7 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 - Search bar with multiple engines
 - Weather widget
 - Clock widget with 12/24-hour format and multiple time zones support
+- Schoology widget for the nearest unsubmitted assignment and today's outstanding count
 - Local fonts mode for privacy and offline use (no Google Fonts CDN)
 
 ## 🪵 Usage
@@ -68,6 +69,8 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
    - Update bookmarks and quick links for those you use most
 
 The weather widget's OpenWeatherMap API key is stored in the current browser's local storage, not in `userconfig.js` or the repository. Right-click the weather widget to add or remove the key. When a key is configured, the page requests your browser location as it loads and uses it for the weather lookup; if location access is unavailable or denied, it uses the configured fallback city. Coordinates and the key are sent to OpenWeatherMap for each lookup. Use a key with appropriate restrictions and rotate it if it is exposed.
+
+The Schoology widget stores the Schoology consumer key and consumer secret in this browser's local storage. Right-click the widget to configure or remove them, and click it to refresh. Credentials are not part of the repository, but remain accessible to this browser and its extensions. The widget requests your enrolled sections, assignments, and submission status from Schoology. Schoology API access and browser cross-origin rules may limit availability.
 
 ### Keyboard shortcuts
 
