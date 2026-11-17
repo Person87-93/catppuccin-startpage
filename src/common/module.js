@@ -6,6 +6,10 @@ const components = {
   "status-bar": Statusbar,
   "current-time": Clock,
   "weather-forecast": Weather,
+  "battery-status": BatteryStatus,
+  "online-status": OnlineStatus,
+  "music-control": MusicControl,
+  "appearance-settings": AppearanceSettings,
   "tabs-list": Tabs,
   "shortcut-tools": ShortcutTools,
 };

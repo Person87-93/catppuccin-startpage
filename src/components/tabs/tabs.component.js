@@ -134,9 +134,10 @@ class Tabs extends Component {
       status-bar {
           bottom: -70px;
           height: 32px;
-          background: ${CONFIG.palette.base};
-          border-radius: 4px;
+          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
+          border-radius: var(--startpage-radius, 4px);
           box-shadow: 0 10px 20px rgba(0, 0, 0, .25);
+          backdrop-filter: blur(var(--startpage-blur, 0px));
       }
 
       #panels, #panels ul,
@@ -149,7 +150,7 @@ class Tabs extends Component {
       }
 
       #panels {
-          border-radius: 5px 0 0 5px;
+          border-radius: var(--startpage-radius, 10px);
           width: 94%;
           max-width: 1500px;
           height: min(60vh, 600px);
@@ -160,7 +161,8 @@ class Tabs extends Component {
           bottom: 0;
           margin: auto;
           box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
-          background: ${CONFIG.palette.base};
+          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
+          backdrop-filter: blur(var(--startpage-blur, 0px));
       }
 
       .categories {
@@ -168,7 +170,7 @@ class Tabs extends Component {
           height: 100%;
           overflow: hidden;
           position: relative;
-          border-radius: 10px 0 0 10px;
+          border-radius: var(--startpage-radius, 10px);
       }
 
       .categories ul {
@@ -177,7 +179,7 @@ class Tabs extends Component {
           width: 100%;
           height: 100%;
           right: 100%;
-          background: ${CONFIG.palette.base};
+          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
           transition: all .6s;
           /* animation: scroll 25s ease-in-out infinite; */
       }
@@ -220,7 +222,7 @@ class Tabs extends Component {
           right: 0;
           width: 70%;
           height: 100%;
-          background: ${CONFIG.palette.base};
+          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
           padding: 5%;
           flex-wrap: wrap;
       }
@@ -237,9 +239,9 @@ class Tabs extends Component {
           display: inline-flex;
           align-items: center;
           padding: .4em .7em;
-          background: ${CONFIG.palette.mantle};
+          background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent);
           box-shadow: 0 4px ${CONFIG.palette.mantle}, 0 5px 10px rgb(0 0 0 / 20%);
-          border-radius: 2px;
+          border-radius: calc(var(--startpage-radius, 10px) / 2);
           margin-bottom: .7em;
       }
 

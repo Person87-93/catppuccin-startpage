@@ -139,6 +139,7 @@ class Statusbar extends Component {
           height: 32px;
           color: #fff;
           font-size: 12px;
+          gap: 0;
       }
 
       .widgets:hover .edit {
@@ -148,7 +149,7 @@ class Statusbar extends Component {
       .widget {
           position: relative;
           height: 100%;
-          padding: 0 1em;
+          padding: 0 var(--startpage-widget-padding, 10px);
       }
 
       .widget.time-widget {
@@ -224,6 +225,10 @@ class Statusbar extends Component {
                 <div class="+ widgets col-end">
                     <current-time class="+ widget time-widget"></current-time>
                     <weather-forecast class="+ widget weather"></weather-forecast>
+                    <battery-status class="+ widget"></battery-status>
+                    <online-status class="+ widget"></online-status>
+                    <music-control class="+ widget"></music-control>
+                    <appearance-settings class="+ widget"></appearance-settings>
                 </div>
             </cols>
         </div>`;
