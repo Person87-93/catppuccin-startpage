@@ -71,7 +71,7 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 
 The weather widget's OpenWeatherMap API key is stored in the current browser's local storage, not in `userconfig.js` or the repository. Right-click the weather widget to add or remove the key. When a key is configured, the page requests your browser location as it loads and uses it for the weather lookup; if location access is unavailable or denied, it uses the configured fallback city. Coordinates and the key are sent to OpenWeatherMap for each lookup. Use a key with appropriate restrictions and rotate it if it is exposed.
 
-The battery indicator depends on browser support for the Battery Status API. The online indicator reflects the browser's network status. The music control plays an audio file you choose from this device; browser pages cannot control audio playing in other tabs. Appearance controls are saved in this browser only.
+The battery indicator depends on browser support for the Battery Status API. The online indicator reflects the browser's network status. By default, the music control plays an audio file you choose from this device. To control audio/video playing in other tabs, install the optional Chromium extension in [`browser-extension`](browser-extension/README.md). It needs website access to inspect and control media elements, and some protected or custom players may not work. Appearance controls are saved in this browser only.
 
 ### Keyboard shortcuts
 

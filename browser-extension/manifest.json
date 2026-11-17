@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Startpage Media Controls",
+  "version": "1.0.0",
+  "description": "Lets the startpage music widget inspect and control media elements in browser tabs.",
+  "permissions": ["scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://person87-93.github.io/*", "http://localhost:8000/*"],
+      "js": ["page-bridge.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
