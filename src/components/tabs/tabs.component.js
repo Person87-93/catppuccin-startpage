@@ -346,6 +346,7 @@ class Tabs extends Component {
           </div>
           <status-bar class="!-"></status-bar>
         </div>
+        <shortcut-tools></shortcut-tools>
       </div>
     `;
   }
