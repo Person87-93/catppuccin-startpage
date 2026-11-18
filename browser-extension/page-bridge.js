@@ -27,6 +27,37 @@
       return;
     }
 
+    if (message?.type === "startpage-element-hiding-get" && typeof message.requestId === "string") {
+      chrome.runtime.sendMessage({ type: "startpage-element-hiding-get" }, (response) => {
+        const error = chrome.runtime.lastError?.message;
+        window.postMessage({
+          type: "startpage-element-hiding-response",
+          requestId: message.requestId,
+          settings: error ? null : response?.settings || null,
+        }, location.origin);
+      });
+      return;
+    }
+
+    if (message?.type === "startpage-element-hiding-settings" && message.settings && typeof message.settings === "object") {
+      chrome.runtime.sendMessage({ type: "startpage-element-hiding-settings", settings: message.settings }, () => {
+        void chrome.runtime.lastError;
+      });
+      return;
+    }
+
+    if (message?.type === "startpage-element-picker-toggle") {
+      chrome.runtime.sendMessage({ type: "startpage-site-picker-toggle" }, (response) => {
+        const error = chrome.runtime.lastError?.message;
+        window.postMessage({
+          type: "startpage-element-picker-response",
+          requestId: message.requestId,
+          response: error ? { ok: false, error } : response,
+        }, location.origin);
+      });
+      return;
+    }
+
     if (message?.type !== "startpage-media-request" || typeof message.requestId !== "string") return;
     const allowedActions = new Set(["getState", "play", "pause", "toggle", "seek", "volume"]);
     if (!allowedActions.has(message.action)) return;

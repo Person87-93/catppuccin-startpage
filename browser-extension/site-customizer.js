@@ -110,15 +110,26 @@
     });
   }, true);
 
-  chrome.storage.local.get("websiteAppearance", ({ websiteAppearance }) => {
-    currentSettings = websiteAppearance || {};
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type !== "startpage-site-picker-toggle") return;
+    currentSettings = { ...currentSettings, enabled: true };
+    setPicker(!pickerActive);
+    sendResponse({ ok: true, active: pickerActive });
+  });
+
+  chrome.storage.local.get(["elementHiding", "websiteAppearance"], ({ elementHiding, websiteAppearance }) => {
+    const legacyRules = websiteAppearance?.hiddenElementsByHost || {};
+    currentSettings = elementHiding || {
+      enabled: Object.keys(legacyRules).length > 0,
+      hiddenElementsByHost: legacyRules,
+    };
     chrome.runtime.sendMessage({ type: "startpage-site-customizer-ready" }, () => {
       void chrome.runtime.lastError;
     });
   });
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && changes.websiteAppearance) {
-      currentSettings = changes.websiteAppearance.newValue || {};
+    if (areaName === "local" && changes.elementHiding) {
+      currentSettings = changes.elementHiding.newValue || {};
       if (!currentSettings.enabled && pickerActive) {
         document.querySelectorAll("[data-startpage-picker-hover]").forEach((element) => element.removeAttribute("data-startpage-picker-hover"));
         setPicker(false);

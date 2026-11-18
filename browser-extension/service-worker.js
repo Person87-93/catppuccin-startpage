@@ -83,8 +83,9 @@ const websiteDefaults = {
   blur: 0,
   font: "system",
   spacing: "normal",
-  hiddenElementsByHost: {},
 };
+
+const hidingDefaults = { enabled: false, hiddenElementsByHost: {} };
 
 function safeColour(value, fallback) {
   return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
@@ -106,7 +107,7 @@ function safeRules(value) {
   return rules;
 }
 
-function safeWebsiteSettings(input, existing = websiteDefaults) {
+function safeWebsiteSettings(input) {
   const source = input && typeof input === "object" ? input : {};
   return {
     enabled: source.enabled === true,
@@ -118,17 +119,19 @@ function safeWebsiteSettings(input, existing = websiteDefaults) {
     blur: Math.max(0, Math.min(16, Number(source.blur) || 0)),
     font: ["system", "arial", "roboto", "georgia"].includes(source.font) ? source.font : "system",
     spacing: ["compact", "normal", "comfortable"].includes(source.spacing) ? source.spacing : "normal",
-    hiddenElementsByHost: safeRules(source.hiddenElementsByHost ?? existing.hiddenElementsByHost),
   };
 }
 
-function websiteCss(input, host) {
+function safeHidingSettings(input) {
+  const source = input && typeof input === "object" ? input : {};
+  return { enabled: source.enabled === true, hiddenElementsByHost: safeRules(source.hiddenElementsByHost) };
+}
+
+function websiteCss(input) {
   const settings = safeWebsiteSettings(input);
   if (!settings.enabled) return "";
   const fonts = { system: "system-ui, sans-serif", arial: "Arial, sans-serif", roboto: "Roboto, Arial, sans-serif", georgia: "Georgia, serif" };
   const spacing = { compact: 1.35, normal: 1.55, comfortable: 1.75 };
-  const selectors = settings.hiddenElementsByHost[host] || [];
-  const hidden = selectors.map((selector) => `:is(${selector}) { display: none !important; }`).join("\n");
   const [red, green, blue] = settings.background.slice(1).match(/.{2}/g).map((channel) => parseInt(channel, 16) / 255);
   const scheme = (red * 0.2126 + green * 0.7152 + blue * 0.0722) < 0.5 ? "dark" : "light";
   return `
@@ -140,8 +143,13 @@ function websiteCss(input, host) {
     body :where(button, input:not([type="checkbox"]):not([type="radio"]), textarea, select, [role="button"]) { color: var(--startpage-site-text) !important; border-color: var(--startpage-site-border) !important; background-color: color-mix(in srgb, var(--startpage-site-background) var(--startpage-site-opacity), transparent) !important; }
     body :where(fieldset, hr, [role="separator"]) { border-color: var(--startpage-site-border) !important; }
     body :where(main, [role="main"], article, aside, nav, header, footer, dialog) { border-color: var(--startpage-site-border) !important; background-color: color-mix(in srgb, var(--startpage-site-background) var(--startpage-site-opacity), transparent) !important; backdrop-filter: blur(var(--startpage-site-blur)) !important; }
-    ${hidden}
   `;
+}
+
+function hidingCss(input, host) {
+  const settings = safeHidingSettings(input);
+  if (!settings.enabled) return "";
+  return (settings.hiddenElementsByHost[host] || []).map((selector) => `:is(${selector}) { display: none !important; }`).join("\n");
 }
 
 const pickerCss = `
@@ -149,7 +157,7 @@ const pickerCss = `
   #startpage-picker-notice { position: fixed !important; z-index: 2147483647 !important; top: 12px !important; right: 12px !important; max-width: min(360px, calc(100vw - 24px)) !important; padding: 10px 14px !important; border: 1px solid #45475a !important; border-radius: 10px !important; background: #1e1e2e !important; color: #cdd6f4 !important; font: 14px/1.4 system-ui, sans-serif !important; box-shadow: 0 8px 30px #0008 !important; pointer-events: none !important; }
 `;
 
-async function updateTabAppearance(tabId, url, oldSettings, newSettings) {
+async function updateTabAppearance(tabId, url, oldAppearance, newAppearance, oldHiding = null, newHiding = null) {
   let host;
   try {
     const parsed = new URL(url);
@@ -158,37 +166,60 @@ async function updateTabAppearance(tabId, url, oldSettings, newSettings) {
   } catch {
     return;
   }
-  const oldCss = websiteCss(oldSettings, host);
-  const newCss = websiteCss(newSettings, host);
-  try {
-    if (oldCss) await chrome.scripting.removeCSS({ target: { tabId }, css: oldCss, origin: "USER" });
-  } catch {
-    // The stylesheet may not have been injected in this document yet.
-  }
-  if (newCss) {
+  const styles = [
+    [websiteCss(oldAppearance), websiteCss(newAppearance)],
+    [hidingCss(oldHiding, host), hidingCss(newHiding, host)],
+  ];
+  for (const [oldCss, newCss] of styles) {
     try {
-      await chrome.scripting.insertCSS({ target: { tabId }, css: newCss, origin: "USER" });
+      if (oldCss) await chrome.scripting.removeCSS({ target: { tabId }, css: oldCss, origin: "USER" });
     } catch {
-      // Browser-internal, protected, or navigated pages cannot always be styled.
+      // The stylesheet may not have been injected in this document yet.
+    }
+    if (newCss) {
+      try {
+        await chrome.scripting.insertCSS({ target: { tabId }, css: newCss, origin: "USER" });
+      } catch {
+        // Browser-internal, protected, or navigated pages cannot always be styled.
+      }
     }
   }
 }
 
-async function updateOpenTabs(oldSettings, newSettings) {
+async function updateOpenTabs(oldAppearance, newAppearance, oldHiding = hidingDefaults, newHiding = hidingDefaults) {
   const tabs = await chrome.tabs.query({});
-  await Promise.all(tabs.filter((tab) => tab.id && tab.url).map((tab) => updateTabAppearance(tab.id, tab.url, oldSettings, newSettings)));
+  await Promise.all(tabs.filter((tab) => tab.id && tab.url).map((tab) => updateTabAppearance(tab.id, tab.url, oldAppearance, newAppearance, oldHiding, newHiding)));
 }
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== "local" || !changes.websiteAppearance) return;
-  const { oldValue, newValue } = changes.websiteAppearance;
-  updateOpenTabs(oldValue || websiteDefaults, newValue || websiteDefaults).catch(() => {});
+  if (areaName !== "local") return;
+  if (changes.websiteAppearance || changes.elementHiding) {
+    chrome.storage.local.get(["websiteAppearance", "elementHiding"]).then((stored) => updateOpenTabs(
+      changes.websiteAppearance?.oldValue || stored.websiteAppearance || websiteDefaults,
+      changes.websiteAppearance?.newValue || stored.websiteAppearance || websiteDefaults,
+      changes.elementHiding?.oldValue || stored.elementHiding || hidingDefaults,
+      changes.elementHiding?.newValue || stored.elementHiding || hidingDefaults,
+    )).catch(() => {});
+  }
 });
 
 async function saveWebsiteSettings(input) {
-  const { websiteAppearance = websiteDefaults } = await chrome.storage.local.get("websiteAppearance");
-  const settings = safeWebsiteSettings(input, websiteAppearance);
+  const settings = safeWebsiteSettings(input);
   await chrome.storage.local.set({ websiteAppearance: settings });
+  return settings;
+}
+
+async function loadHidingSettings() {
+  const stored = await chrome.storage.local.get(["elementHiding", "websiteAppearance"]);
+  if (stored.elementHiding) return safeHidingSettings(stored.elementHiding);
+  const legacy = safeHidingSettings({ enabled: Boolean(Object.keys(stored.websiteAppearance?.hiddenElementsByHost || {}).length), hiddenElementsByHost: stored.websiteAppearance?.hiddenElementsByHost });
+  if (legacy.enabled) await chrome.storage.local.set({ elementHiding: legacy });
+  return legacy;
+}
+
+async function saveHidingSettings(input) {
+  const settings = safeHidingSettings(input);
+  await chrome.storage.local.set({ elementHiding: settings });
   return settings;
 }
 
@@ -202,14 +233,14 @@ async function addHiddenElement(message, sender) {
   if (!sender.tab?.id || host !== message.host || typeof message.selector !== "string" || !message.selector.trim() || message.selector.length > 512) {
     return { ok: false, error: "The selected page element was invalid." };
   }
-  const { websiteAppearance = websiteDefaults } = await chrome.storage.local.get("websiteAppearance");
-  const rules = safeRules(websiteAppearance.hiddenElementsByHost);
+  const hidingSettings = await loadHidingSettings();
+  const rules = safeRules(hidingSettings.hiddenElementsByHost);
   const selectors = rules[host] || [];
   if (!selectors.includes(message.selector) && selectors.length < 50) selectors.push(message.selector);
   rules[host] = selectors;
-  const settings = safeWebsiteSettings({ ...websiteAppearance, hiddenElementsByHost: rules }, websiteAppearance);
-  await chrome.storage.local.set({ websiteAppearance: settings });
-  return { ok: true };
+  const settings = safeHidingSettings({ ...hidingSettings, enabled: true, hiddenElementsByHost: rules });
+  await saveHidingSettings(settings);
+  return { ok: true, settings };
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -225,10 +256,39 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "startpage-element-hiding-get" && trustedStartpage(sender.url)) {
+    loadHidingSettings().then((settings) => sendResponse({ settings })).catch(() => sendResponse({ settings: hidingDefaults }));
+    return true;
+  }
+
+  if (message?.type === "startpage-element-hiding-settings" && trustedStartpage(sender.url) && sender.tab?.id) {
+    saveHidingSettings(message.settings).then((settings) => sendResponse({ settings })).catch((error) => sendResponse({ error: error.message }));
+    return true;
+  }
+
   if (message?.type === "startpage-site-customizer-ready" && sender.tab?.id) {
-    chrome.storage.local.get("websiteAppearance").then(({ websiteAppearance }) => {
-      return updateTabAppearance(sender.tab.id, sender.url, null, websiteAppearance || websiteDefaults);
+    Promise.all([chrome.storage.local.get("websiteAppearance"), loadHidingSettings()]).then(([{ websiteAppearance }, hiding]) => {
+      return updateTabAppearance(sender.tab.id, sender.url, null, websiteAppearance || websiteDefaults, null, hiding);
     }).then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+
+  if (message?.type === "startpage-site-picker-toggle" && sender.tab?.id && trustedStartpage(sender.url)) {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(([tab]) => {
+      if (!tab?.id || tab.id === sender.tab.id) return { ok: false, error: "Open the website you want to customize, then use the extension button." };
+      return chrome.tabs.sendMessage(tab.id, { type: "startpage-site-picker-toggle" }).then(() => ({ ok: true }));
+    }).then(sendResponse).catch(() => sendResponse({ ok: false, error: "This page does not allow element picking." }));
+    return true;
+  }
+
+  if (message?.type === "startpage-site-picker-toggle-active-tab" && sender.url?.startsWith(`chrome-extension://${chrome.runtime.id}/`)) {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(async ([tab]) => {
+      if (!tab?.id || !tab.url || !/^https?:/.test(tab.url)) return { ok: false, error: "Open a regular website to use the picker." };
+      const hiding = await loadHidingSettings();
+      if (!hiding.enabled) await saveHidingSettings({ ...hiding, enabled: true });
+      await chrome.tabs.sendMessage(tab.id, { type: "startpage-site-picker-toggle" });
+      return { ok: true };
+    }).then(sendResponse).catch(() => sendResponse({ ok: false, error: "This page does not allow element picking. Try another website." }));
     return true;
   }
 

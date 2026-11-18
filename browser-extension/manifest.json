@@ -1,12 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Startpage Media Controls",
-  "version": "1.1.0",
-  "description": "Connects startpage media controls and applies optional website appearance customizations.",
+  "version": "1.2.0",
+  "description": "Connects startpage media controls, website appearance, and per-site element hiding.",
   "permissions": ["scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "Pick an element to hide",
+    "default_popup": "popup.html"
   },
   "content_scripts": [
     {
