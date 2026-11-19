@@ -3,21 +3,34 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Element picker</title>
+    <title>Element tools</title>
     <style>
       :root { color-scheme: dark; font: 14px/1.45 system-ui, sans-serif; }
-      body { width: 260px; margin: 0; padding: 16px; background: #1e1e2e; color: #cdd6f4; }
-      h1 { margin: 0 0 8px; font-size: 16px; }
-      p { margin: 0 0 14px; color: #a6adc8; }
-      button { width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; background: #89b4fa; color: #1e1e2e; font: inherit; font-weight: 700; cursor: pointer; }
+      body { width: 320px; max-height: 560px; overflow: auto; margin: 0; padding: 16px; background: #1e1e2e; color: #cdd6f4; }
+      h1 { margin: 0 0 4px; font-size: 16px; }
+      h2 { margin: 18px 0 8px; color: #a6adc8; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+      p { margin: 0 0 12px; color: #a6adc8; }
+      button { padding: 9px 10px; border: 0; border-radius: 8px; background: #89b4fa; color: #1e1e2e; font: inherit; font-weight: 700; cursor: pointer; }
+      .primary, .restore-all { width: 100%; }
+      .restore-all { margin-top: 8px; background: #f38ba8; }
       button:disabled { opacity: .55; cursor: default; }
+      #site { color: #cdd6f4; font-weight: 650; overflow-wrap: anywhere; }
+      #items { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+      #items li { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 9px; border: 1px solid #45475a; border-radius: 8px; background: #181825; }
+      .selector { overflow-wrap: anywhere; color: #cdd6f4; font: 12px/1.4 ui-monospace, monospace; }
+      .restore-one { background: #a6e3a1; white-space: nowrap; }
       #status { min-height: 20px; margin: 12px 0 0; }
     </style>
   </head>
   <body>
-    <h1>Hide a page element</h1>
-    <p>Pick an element on the current website. It will stay hidden on this site.</p>
-    <button id="pick" type="button">Start element picker</button>
+    <h1>Element tools</h1>
+    <p>Pick or restore hidden elements, independently of website styling.</p>
+    <button id="pick" class="primary" type="button">Start element picker</button>
+    <h2>Hidden elements on this site</h2>
+    <div id="site">Checking current site…</div>
+    <ul id="items" aria-live="polite"></ul>
+    <button id="restore-site" class="restore-all" type="button" hidden>Restore all on this site</button>
+    <button id="restore-everywhere" class="restore-all" type="button" hidden>Restore all sites</button>
     <p id="status" role="status"></p>
     <script src="popup.js"></script>
   </body>

@@ -266,6 +266,66 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (sender.url?.startsWith(`chrome-extension://${chrome.runtime.id}/`)
+      && message?.type === "startpage-element-hiding-active-site-get") {
+    Promise.all([chrome.tabs.query({ active: true, lastFocusedWindow: true }), loadHidingSettings()]).then(([tabs, settings]) => {
+      let host = "";
+      try {
+        host = new URL(tabs[0]?.url || "").hostname.toLowerCase();
+      } catch {
+        // Browser pages do not have per-site rules.
+      }
+      const hasAnyRules = Object.values(settings.hiddenElementsByHost).some((siteRules) => siteRules.length > 0);
+      sendResponse({ host, selectors: settings.hiddenElementsByHost[host] || [], hasAnyRules });
+    }).catch(() => sendResponse({ host: "", selectors: [], hasAnyRules: false }));
+    return true;
+  }
+
+  if (sender.url?.startsWith(`chrome-extension://${chrome.runtime.id}/`)
+      && message?.type === "startpage-element-hiding-active-site-remove") {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(async ([tab]) => {
+      let host = "";
+      try {
+        host = new URL(tab?.url || "").hostname.toLowerCase();
+      } catch {
+        return { ok: false, error: "Open the website containing the hidden item first." };
+      }
+      const settings = await loadHidingSettings();
+      const selectors = settings.hiddenElementsByHost[host] || [];
+      if (!selectors.includes(message.selector)) return { ok: false, error: "That hidden item is no longer saved for this site." };
+      settings.hiddenElementsByHost[host] = selectors.filter((selector) => selector !== message.selector);
+      if (!settings.hiddenElementsByHost[host].length) delete settings.hiddenElementsByHost[host];
+      await saveHidingSettings(settings);
+      return { ok: true, host, selectors: settings.hiddenElementsByHost[host] || [] };
+    }).then(sendResponse).catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (sender.url?.startsWith(`chrome-extension://${chrome.runtime.id}/`)
+      && message?.type === "startpage-element-hiding-active-site-clear") {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(async ([tab]) => {
+      let host = "";
+      try {
+        host = new URL(tab?.url || "").hostname.toLowerCase();
+      } catch {
+        return { ok: false, error: "Open the website containing the hidden items first." };
+      }
+      const settings = await loadHidingSettings();
+      delete settings.hiddenElementsByHost[host];
+      await saveHidingSettings(settings);
+      return { ok: true, host, selectors: [] };
+    }).then(sendResponse).catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (sender.url?.startsWith(`chrome-extension://${chrome.runtime.id}/`)
+      && message?.type === "startpage-element-hiding-clear-all") {
+    saveHidingSettings({ enabled: false, hiddenElementsByHost: {} })
+      .then(() => sendResponse({ ok: true }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
   if (message?.type === "startpage-site-customizer-ready" && sender.tab?.id) {
     Promise.all([chrome.storage.local.get("websiteAppearance"), loadHidingSettings()]).then(([{ websiteAppearance }, hiding]) => {
       return updateTabAppearance(sender.tab.id, sender.url, null, websiteAppearance || websiteDefaults, null, hiding);
