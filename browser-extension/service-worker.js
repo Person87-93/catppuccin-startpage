@@ -223,6 +223,27 @@ async function saveHidingSettings(input) {
   return settings;
 }
 
+chrome.commands.onCommand.addListener((command) => {
+  if (command !== "restore-hidden-elements") return;
+  chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(async ([tab]) => {
+    let host;
+    try {
+      const url = new URL(tab?.url || "");
+      if (!/^https?:$/.test(url.protocol)) return;
+      host = url.hostname.toLowerCase();
+    } catch {
+      return;
+    }
+    const settings = await loadHidingSettings();
+    const removed = (settings.hiddenElementsByHost[host] || []).length;
+    delete settings.hiddenElementsByHost[host];
+    await saveHidingSettings(settings);
+    await chrome.action.setBadgeBackgroundColor({ color: "#a6e3a1", tabId: tab.id });
+    await chrome.action.setBadgeText({ text: removed ? "OK" : "—", tabId: tab.id });
+    setTimeout(() => chrome.action.setBadgeText({ text: "", tabId: tab.id }).catch(() => {}), 2500);
+  }).catch(() => {});
+});
+
 async function addHiddenElement(message, sender) {
   let host;
   try {
