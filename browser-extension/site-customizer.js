@@ -103,7 +103,7 @@
     }
     chrome.runtime.sendMessage({ type: "startpage-site-hide-element", host: location.hostname.toLowerCase(), selector }, (response) => {
       if (chrome.runtime.lastError || !response?.ok) {
-        showNotice("Could not save the selected element.");
+        showNotice(response?.error || "Could not save the selected element.");
         return;
       }
       showNotice(`Hidden ${describeElement(element)}. Remove its selector from startpage settings to restore it.`);

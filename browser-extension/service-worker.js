@@ -219,6 +219,54 @@ async function loadHidingSettings() {
 
 async function saveHidingSettings(input) {
   const settings = safeHidingSettings(input);
+  let protectedSelectors = [];
+  for (const host of ["person87-93.github.io", "localhost"]) {
+    const selectors = settings.hiddenElementsByHost[host];
+    if (!selectors?.length) continue;
+    const tabs = await chrome.tabs.query({});
+    const page = tabs.find((tab) => {
+      try {
+        const url = new URL(tab.url || "");
+        return url.hostname.toLowerCase() === host && trustedStartpage(url.href);
+      } catch {
+        return false;
+      }
+    });
+    if (!page?.id) continue;
+    try {
+      const [result] = await chrome.scripting.executeScript({
+        target: { tabId: page.id },
+        func: (candidateSelectors) => {
+          const recoveryRoot = document.querySelector("tabs-list");
+          if (!recoveryRoot) return null;
+          const protectedNodes = [];
+          for (let node = recoveryRoot; node; node = node.parentElement) protectedNodes.push(node);
+          return candidateSelectors.filter((selector) => protectedNodes.some((node) => {
+            try { return node.matches(selector); } catch { return true; }
+          }));
+        },
+        args: [selectors],
+      });
+      if (!Array.isArray(result?.result)) {
+        const stored = await chrome.storage.local.get("elementHiding");
+        const previous = safeHidingSettings(stored.elementHiding);
+        if (previous.hiddenElementsByHost[host]) settings.hiddenElementsByHost[host] = previous.hiddenElementsByHost[host];
+        else delete settings.hiddenElementsByHost[host];
+        continue;
+      }
+      protectedSelectors = result.result;
+    } catch {
+      const stored = await chrome.storage.local.get("elementHiding");
+      const previous = safeHidingSettings(stored.elementHiding);
+      if (previous.hiddenElementsByHost[host]) settings.hiddenElementsByHost[host] = previous.hiddenElementsByHost[host];
+      else delete settings.hiddenElementsByHost[host];
+      continue;
+    }
+    if (protectedSelectors.length) {
+      settings.hiddenElementsByHost[host] = selectors.filter((selector) => !protectedSelectors.includes(selector));
+      if (!settings.hiddenElementsByHost[host].length) delete settings.hiddenElementsByHost[host];
+    }
+  }
   await chrome.storage.local.set({ elementHiding: settings });
   return settings;
 }
@@ -260,8 +308,11 @@ async function addHiddenElement(message, sender) {
   if (!selectors.includes(message.selector) && selectors.length < 50) selectors.push(message.selector);
   rules[host] = selectors;
   const settings = safeHidingSettings({ ...hidingSettings, enabled: true, hiddenElementsByHost: rules });
-  await saveHidingSettings(settings);
-  return { ok: true, settings };
+  const saved = await saveHidingSettings(settings);
+  if (!(saved.hiddenElementsByHost[host] || []).includes(message.selector)) {
+    return { ok: false, error: "That selector would hide the startpage recovery menu, so it was blocked." };
+  }
+  return { ok: true, settings: saved };
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

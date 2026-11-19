@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Startpage Media Controls",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Connects startpage media controls, website appearance, and recoverable per-site element hiding.",
   "permissions": ["scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
