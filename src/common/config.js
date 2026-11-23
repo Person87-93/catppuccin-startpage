@@ -103,11 +103,21 @@ class Config {
    * @returns {void}
    */
   autoConfig() {
+    let imported = {};
+    try {
+      imported = JSON.parse(localStorage.getItem("configurationImport") || "{}");
+    } catch {
+      imported = {};
+    }
+
     Object.keys(this.defaults).forEach((setting) => {
-      if (this.canOverrideStorage(setting)) this[setting] = this.config[setting];
+      if (Object.prototype.hasOwnProperty.call(imported, setting)) this[setting] = imported[setting];
+      else if (this.canOverrideStorage(setting)) this[setting] = this.config[setting];
       else if (this.storage.hasValue(setting)) this[setting] = this.storage.get(setting);
       else this[setting] = this.defaults[setting];
     });
+
+    if (localStorage.getItem("configurationImport")) localStorage.removeItem("configurationImport");
   }
 
   /**
