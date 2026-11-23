@@ -1,3 +1,5 @@
+importScripts("browser-tools.js");
+
 const trustedStartpage = (url) => {
   try {
     const parsed = new URL(url);
