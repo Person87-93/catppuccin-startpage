@@ -19,6 +19,7 @@ const featureDefaults = {
   updateFrequency: "daily",
   browserNotifications: false,
   emailDigests: false,
+  contextMenuEnabled: true,
   diagnosticsHistory: true,
 };
 
@@ -253,6 +254,11 @@ async function recordDiagnosticError(error) {
 async function refreshWorkspaceMenus(workspaces) {
   if (!chrome.contextMenus) return;
   if (!workspaces) workspaces = await readWorkspaces();
+  const storedPreferences = await chrome.storage.local.get(FEATURE_SETTINGS_KEY);
+  if (storedPreferences[FEATURE_SETTINGS_KEY]?.contextMenuEnabled === false) {
+    await chrome.contextMenus.removeAll().catch(() => {});
+    return;
+  }
   const items = await chrome.contextMenus.removeAll().catch(() => {});
   void items;
   chrome.contextMenus.create({ id: "startpage-root", title: "Startpage tools", contexts: ["all"] });
@@ -351,6 +357,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case "browser-tools-open-dashboard":
         await chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html"), active: true });
         return { ok: true };
+      case "browser-tools-open-shortcut-settings":
+        await chrome.tabs.create({ url: "chrome://extensions/shortcuts", active: true });
+        return { ok: true };
       case "browser-tools-workspaces-get":
         return { ok: true, workspaces: await readWorkspaces() };
       case "browser-tools-workspace-save":
@@ -376,8 +385,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return { ok: true, settings: { ...featureDefaults, ...(stored[FEATURE_SETTINGS_KEY] || {}) } };
       }
       case "browser-tools-settings-set": {
-        const settings = { ...featureDefaults, ...(message.settings || {}) };
+        const stored = await chrome.storage.local.get(FEATURE_SETTINGS_KEY);
+        const settings = { ...featureDefaults, ...(stored[FEATURE_SETTINGS_KEY] || {}), ...(message.settings || {}) };
         await chrome.storage.local.set({ [FEATURE_SETTINGS_KEY]: settings });
+        await refreshWorkspaceMenus();
         return { ok: true, settings };
       }
       case "browser-tools-notification-permission":
