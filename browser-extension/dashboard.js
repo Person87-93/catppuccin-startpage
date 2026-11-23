@@ -103,11 +103,9 @@ async function loadDiagnostics() {
     ["saved workspaces", data.workspaceCount],
     ["saved workspace tabs", data.workspaceTabCount],
     ["tab groups", data.tabGroupCount],
-    ["tab groups", data.tabGroupCount],
     ["focus mode", data.focusActive ? "active" : "off"],
     ["focus websites", data.focusSiteCount],
-    ["extension storage", `${(data.localStorageBytes / 1024).toFixed(1)} KB`],
-    ["active page load", data.pagePerformance?.loadCompleteMs ? `${data.pagePerformance.loadCompleteMs} ms` : "unavailable"],
+    ["extension storage", `${(data.extensionStorageBytes / 1024).toFixed(1)} KB`],
     ["active page load", data.pagePerformance?.loadCompleteMs ? `${data.pagePerformance.loadCompleteMs} ms` : "unavailable"],
   ];
   const grid = $("#diagnostics-grid");
