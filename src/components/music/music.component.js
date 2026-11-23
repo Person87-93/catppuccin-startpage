@@ -147,15 +147,13 @@ class MusicControl extends Component {
       this.releaseAudioUrl();
       this.objectUrl = URL.createObjectURL(selected);
       audio.src = this.objectUrl;
-      query(".track").textContent = selected.name;
-      query(".source").textContent = "Playing from this device";
       this.remoteMedia = null;
-      this.localMode = true;
       this.remoteSources = [];
-      this.remoteMedia = null;
+      this.localMode = true;
       query(".other-sources").hidden = true;
       query(".track").textContent = selected.name;
       query(".source").textContent = "Playing from this device";
+      query(".source").classList.remove("idle");
       play.disabled = false;
       seek.disabled = false;
       query(".clear").disabled = false;
