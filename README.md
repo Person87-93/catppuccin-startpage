@@ -59,6 +59,8 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 - A local audio player and browser-local appearance settings
 - Optional browser-wide website colour, typography, spacing, and per-site element hiding through the companion Chromium extension
 - Local fonts mode for privacy and offline use (no Google Fonts CDN)
+- Browser-local notes and to-do list with automatic saving
+- Portable JSON backups for configuration, appearance, quick links, notes, and tasks
 
 ## 🪵 Usage
 
@@ -84,6 +86,12 @@ The battery indicator depends on browser support for the Battery Status API. The
 - `1`–`5`: switch start-page tabs
 
 Shortcuts do not run while you are typing in a field. Quick links added with `b` are saved in this browser only.
+
+### Notes, tasks, and backups
+
+Open the notebook icon in the status bar to use the browser-local notes pad and to-do list. Notes save as you type; tasks can be added, completed, and removed. This data stays in the current browser profile.
+
+Use **Export backup** to download a JSON backup containing your startpage configuration, appearance preferences, custom quick links, notes, and tasks. Use **Import backup** to restore a backup in the current browser. Importing a backup replaces the matching local startpage settings and reloads the page. Weather API keys are deliberately excluded from exported backups.
 
 > [!TIP]
 > You can find icons for your bookmarks using [`tabler-icons`](https://tabler.io/icons).

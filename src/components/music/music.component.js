@@ -8,7 +8,7 @@ class MusicControl extends Component {
   pendingRequests = new Map();
 
   imports() {
-    return [this.getResource("icons", "material"), this.getResource("fonts", "roboto")];
+    return [this.getResource("icons", "material"), this.getResource("fonts", "roboto"), this.getResource("fonts", "nunito"), this.getResource("fonts", "raleway")];
   }
 
   style() {
@@ -17,15 +17,15 @@ class MusicControl extends Component {
       .music-button i { color: ${CONFIG.palette.mauve}; font-size: 14pt; }
       .player-dialog { position: fixed; inset: auto 16px 48px auto; width: min(340px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: min(90vh, 600px); margin: 0; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
       .player-dialog::backdrop { background: transparent; }
-      .player { width: 100%; max-height: min(90vh, 600px); overflow: auto; padding: 16px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 12px 32px rgb(0 0 0 / 35%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 13px 'Roboto', sans-serif; }
+      .player { width: 100%; max-height: min(90vh, 600px); overflow: auto; padding: 16px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 12px 32px rgb(0 0 0 / 35%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 13px 'Nunito', 'Roboto', sans-serif; }
       .player-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-      .track { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; margin-bottom: 4px; }
+      .track { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${CONFIG.palette.text}; font: 800 18px 'Nunito', sans-serif; letter-spacing: -.02em; margin-bottom: 5px; }
       .close-player { flex: none; padding: 3px !important; }
-      .source { color: ${CONFIG.palette.subtext0}; font-size: 11px; margin-bottom: 12px; }
+      .source { color: ${CONFIG.palette.subtext1}; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
       .controls { display: grid; grid-template-columns: 36px 1fr; align-items: center; gap: 8px; }
       .player button { border: 0; border-radius: 7px; padding: 7px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
       .player input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); }
-      .time { display: flex; justify-content: space-between; color: ${CONFIG.palette.subtext0}; font-size: 11px; margin-top: 3px; }
+      .time { display: flex; justify-content: space-between; color: ${CONFIG.palette.subtext1}; font: 600 11px 'Roboto', sans-serif; font-variant-numeric: tabular-nums; margin-top: 3px; }
       .volume, .file-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
       .volume i { color: ${CONFIG.palette.subtext0}; font-size: 17px; }
       .file-row label { display: inline-block; cursor: pointer; }

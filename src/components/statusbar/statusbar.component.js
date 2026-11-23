@@ -137,8 +137,9 @@ class Statusbar extends Component {
           right: 0;
           margin: auto;
           height: 32px;
-          color: #fff;
-          font-size: 12px;
+          color: ${CONFIG.palette.subtext1};
+          font: 500 12px 'Nunito', 'Roboto', sans-serif;
+          letter-spacing: .015em;
           gap: 0;
       }
 
@@ -181,7 +182,8 @@ class Statusbar extends Component {
       }
 
       #tabs .time span {
-          font-weight: 400;
+          font-weight: 600;
+          color: ${CONFIG.palette.text};
       }
 
       #tabs i {
@@ -195,7 +197,7 @@ class Statusbar extends Component {
           left: 0;
           height: calc(100% - 15px);
           width: 1px;
-          background: rgb(255 255 255 / 10%);
+          background: ${CONFIG.palette.surface1};
       }
 
       .fastlink {
@@ -234,6 +236,7 @@ class Statusbar extends Component {
                     <battery-status class="+ widget"></battery-status>
                     <online-status class="+ widget"></online-status>
                     <music-control class="+ widget"></music-control>
+                    <productivity-tools class="+ widget"></productivity-tools>
                     <appearance-settings class="+ widget"></appearance-settings>
                 </div>
             </cols>

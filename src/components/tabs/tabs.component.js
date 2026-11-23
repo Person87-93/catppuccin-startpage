@@ -234,7 +234,8 @@ class Tabs extends Component {
       .categories ul .links a {
           color: ${CONFIG.palette.text};
           text-decoration: none;
-          font: 700 18px 'Roboto', sans-serif;
+          font: 700 18px 'Nunito', 'Roboto', sans-serif;
+          letter-spacing: .01em;
           font-size: calc(18px * var(--startpage-text-scale, 1));
           transition: all .2s;
           display: inline-flex;
@@ -291,14 +292,15 @@ class Tabs extends Component {
       }
 
       .categories .links li h1 {
-          color: ${CONFIG.palette.text};
-        opacity: 0.5;
-          font-size: 13px;
+          color: ${CONFIG.palette.lavender || CONFIG.palette.mauve};
+          opacity: 0.9;
+          font-size: 11px;
           margin-bottom: 1em;
           font-weight: 600;
           letter-spacing: 1px;
           text-transform: uppercase;
-          font-family: 'Raleway', sans-serif;
+          font-family: 'Raleway', 'Nunito', sans-serif;
+          letter-spacing: .12em;
       }
 
       .categories .link-icon {

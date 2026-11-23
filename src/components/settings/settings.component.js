@@ -3,36 +3,73 @@ class AppearanceSettings extends Component {
   static storageKey = "startpageAppearance";
 
   imports() {
-    return [this.getResource("icons", "material"), this.getResource("fonts", "roboto")];
+    return [this.getResource("icons", "material"), this.getResource("fonts", "roboto"), this.getResource("fonts", "nunito"), this.getResource("fonts", "raleway")];
   }
 
   style() {
     return `
       .settings-toggle { height: 100%; display: flex; align-items: center; padding: 0; border: 0; background: transparent; color: ${CONFIG.palette.text}; cursor: pointer; }
       .settings-toggle i { font-size: 16pt; }
-      .settings-dialog { width: min(430px, calc(100vw - 32px)); max-height: min(90vh, 700px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
-      .settings-dialog::backdrop { background: rgb(0 0 0 / 55%); }
-      .panel { width: 100%; max-height: min(90vh, 700px); overflow: auto; padding: 22px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 16px 50px rgb(0 0 0 / 40%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Roboto', sans-serif; }
-      .heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-      .heading h2 { font-size: 20px; }
+      .settings-dialog { width: min(790px, calc(100vw - 32px)); max-height: min(92vh, 820px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
+      .settings-dialog::backdrop { background: rgb(10 10 18 / 68%); backdrop-filter: blur(7px); }
+      .panel { width: 100%; max-height: min(92vh, 820px); overflow: auto; box-sizing: border-box; padding: 26px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 18px; background: linear-gradient(145deg, color-mix(in srgb, ${CONFIG.palette.mantle} 97%, ${CONFIG.palette.mauve}), color-mix(in srgb, ${CONFIG.palette.base} 96%, ${CONFIG.palette.blue})); color: ${CONFIG.palette.text}; box-shadow: 0 22px 70px rgb(0 0 0 / 48%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Nunito', 'Roboto', sans-serif; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+      .heading { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 4px 0 16px; border-bottom: 1px solid ${CONFIG.palette.surface1}; }
+      .heading h2 { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; font: 800 26px 'Nunito', sans-serif; letter-spacing: -.035em; margin: 0; }
+      .heading::after { content: "PERSONALIZE YOUR SPACE"; margin-left: auto; margin-right: 18px; color: ${CONFIG.palette.subtext0}; font: 700 10px 'Raleway', sans-serif; letter-spacing: .16em; }
       .heading button { border: 0; background: none; color: ${CONFIG.palette.text}; cursor: pointer; }
-      .control { margin: 16px 0; }
-      .section-title { margin: 24px 0 10px; padding-bottom: 7px; border-bottom: 1px solid ${CONFIG.palette.surface1}; color: ${CONFIG.palette.subtext1}; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-      .control label { display: flex; justify-content: space-between; margin-bottom: 7px; }
-      .control input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); }
+      .settings-nav { grid-column: 1; grid-row: 2 / span 4; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 14px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 32%, transparent); align-self: start; position: sticky; top: 0; }
+      .category { display: grid; grid-template-columns: 28px 1fr; grid-template-rows: auto auto; align-items: center; column-gap: 8px; min-height: 56px; padding: 9px 10px; text-align: left; border: 1px solid transparent; border-radius: 10px; color: ${CONFIG.palette.subtext1}; background: transparent; cursor: pointer; transition: .18s ease; }
+      .category i { grid-row: 1 / 3; font-size: 19px; }
+      .category span { color: inherit; font: 800 13px 'Nunito', sans-serif; }
+      .category small { color: ${CONFIG.palette.subtext0}; font: 600 10px 'Roboto', sans-serif; }
+      .category:hover { color: ${CONFIG.palette.text}; background: color-mix(in srgb, ${CONFIG.palette.surface1} 45%, transparent); }
+      .category.active { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; border-color: color-mix(in srgb, ${CONFIG.palette.mauve} 42%, transparent); background: linear-gradient(110deg, color-mix(in srgb, ${CONFIG.palette.mauve} 17%, transparent), color-mix(in srgb, ${CONFIG.palette.blue} 12%, transparent)); }
+      .settings-main { grid-column: 2; grid-row: 2; min-width: 0; }
+      .settings-page { display: none; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 0 12px; }
+      .settings-page.active { display: grid; }
+      .page-heading { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; margin: 2px 0 13px; color: ${CONFIG.palette.text}; font: 800 17px 'Nunito', sans-serif; }
+      .page-heading span { color: ${CONFIG.palette.subtext0}; font: 700 9px 'Raleway', sans-serif; letter-spacing: .15em; }
+      .settings-page > .control { min-width: 0; }
+      .settings-page > .section-title, .settings-page > .widget-switches, .settings-page > .website-settings, .settings-page > .element-hiding { grid-column: 1 / -1; }
+      .control { min-width: 0; margin: 7px 0; padding: 13px 14px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 12px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 42%, transparent); transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+      .control:hover { border-color: ${CONFIG.palette.mauve}; background: color-mix(in srgb, ${CONFIG.palette.surface0} 68%, transparent); transform: translateY(-1px); }
+      .section-title { grid-column: 1 / -1; margin: 22px 0 5px; padding: 0 0 9px 2px; border-bottom: 1px solid ${CONFIG.palette.surface1}; color: ${CONFIG.palette.mauve}; font: 800 11px 'Raleway', 'Nunito', sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+      .section-title::before { content: "✦"; margin-right: 8px; color: ${CONFIG.palette.peach}; }
+      .control label { display: flex; justify-content: space-between; margin-bottom: 7px; color: ${CONFIG.palette.text}; font-weight: 700; }
+      .control input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); cursor: pointer; }
+      .control input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(90deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); }
+      .control input[type="range"]::-webkit-slider-thumb { margin-top: -5px; }
+      .control output { color: ${CONFIG.palette.lavender || CONFIG.palette.blue}; font: 800 12px 'Roboto', sans-serif; font-variant-numeric: tabular-nums; }
+      .control select { outline: none; transition: border-color .15s ease; }
+      .control select:focus, .element-hiding textarea:focus { border-color: ${CONFIG.palette.mauve}; }
       .control input[type="color"] { width: 44px; height: 30px; border: 0; background: transparent; cursor: pointer; }
       .control select { width: 100%; padding: 9px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 6px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; }
-      .widget-switches { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
-      .widget-switches label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+      .widget-switches { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+      .widget-switches label { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 0 12px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 10px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 42%, transparent); cursor: pointer; font-weight: 700; transition: .18s ease; }
+      .widget-switches label:hover { border-color: ${CONFIG.palette.teal}; background: color-mix(in srgb, ${CONFIG.palette.teal} 10%, transparent); }
+      .widget-switches input { width: 16px; height: 16px; }
       .widget-switches input { accent-color: var(--startpage-accent, var(--accent)); }
-      .website-settings { margin-top: 12px; padding-top: 8px; border-top: 1px solid ${CONFIG.palette.surface1}; }
-      .element-hiding textarea { width: 100%; min-height: 76px; resize: vertical; box-sizing: border-box; padding: 8px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 6px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; font: 12px monospace; }
+      .website-settings { grid-column: 1 / -1; margin-top: 4px; padding: 10px 14px 14px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 12px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 25%, transparent); display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+      .website-settings > .help, .website-settings > .website-grid { grid-column: 1 / -1; }
+      .website-settings > .control:first-child { grid-column: 1 / -1; }
+      .website-settings > .control { background: transparent; border: 0; padding: 7px 2px; }
+      .website-settings > .control:hover { transform: none; background: transparent; }
+      .website-settings > .website-grid .control { background: transparent; border: 0; padding: 4px 2px; }
+      .element-hiding { grid-column: 1 / -1; padding: 12px 14px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 12px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 25%, transparent); }
+      .element-hiding .control { background: transparent; border: 0; padding: 5px 0; }
+      .element-hiding .control:hover { transform: none; }
+      .element-hiding textarea { width: 100%; min-height: 76px; resize: vertical; box-sizing: border-box; padding: 10px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 8px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; font: 12px monospace; }
       .website-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
       .website-grid .control { margin: 8px 0; }
       .website-colour { display: flex; align-items: center; justify-content: space-between; }
-      .help { color: ${CONFIG.palette.subtext0}; font-size: 12px; line-height: 1.5; }
-      .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-      .actions button { border: 0; border-radius: 6px; padding: 9px 13px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
+      .help { grid-column: 1 / -1; color: ${CONFIG.palette.subtext1}; font-size: 12px; line-height: 1.6; }
+      .panel > .help { margin: 12px 0 0; }
+      .actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 15px; border-top: 1px solid ${CONFIG.palette.surface1}; }
+      .actions button { border: 1px solid ${CONFIG.palette.surface1}; border-radius: 8px; padding: 10px 15px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; font-weight: 800; transition: .18s ease; }
+      .actions button:hover { border-color: ${CONFIG.palette.mauve}; filter: brightness(1.08); transform: translateY(-1px); }
+      .actions .done { background: linear-gradient(110deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); color: ${CONFIG.palette.crust}; border: 0; }
+      .website-status, .hiding-status { margin-top: 8px; }
+      @media (max-width: 640px) { .panel { grid-template-columns: 1fr; padding: 17px; } .heading::after { display: none; } .settings-nav { grid-column: 1; grid-row: auto; flex-direction: row; overflow-x: auto; position: static; padding: 6px; } .category { flex: 1 0 112px; min-height: 48px; } .category small { display: none; } .settings-main { grid-column: 1; grid-row: auto; } .settings-page { grid-template-columns: 1fr; } .settings-page > .control { grid-column: 1; } .section-title, .widget-switches, .website-settings, .element-hiding, .actions, .panel > .help { grid-column: 1; } .widget-switches { grid-template-columns: 1fr 1fr; } .website-settings { grid-template-columns: 1fr; } }
     `;
   }
 
@@ -41,7 +78,16 @@ class AppearanceSettings extends Component {
       <dialog class="settings-dialog" aria-label="Appearance settings">
         <section class="panel">
           <div class="heading"><h2>Customize</h2><button type="button" class="close" aria-label="Close"><i class="material-icons">close</i></button></div>
-          <div class="control"><label for="transparency">Panel transparency <output data-value="transparency"></output></label><input id="transparency" type="range" min="55" max="100" value="100"></div>
+          <nav class="settings-nav" aria-label="Settings categories" role="tablist">
+            <button type="button" class="category active" role="tab" aria-selected="true" data-category="appearance"><i class="material-icons">palette</i><span>Appearance</span><small>Theme & style</small></button>
+            <button type="button" class="category" role="tab" aria-selected="false" data-category="widgets"><i class="material-icons">widgets</i><span>Widgets</span><small>Your status bar</small></button>
+            <button type="button" class="category" role="tab" aria-selected="false" data-category="websites"><i class="material-icons">language</i><span>Websites</span><small>Browser styling</small></button>
+            <button type="button" class="category" role="tab" aria-selected="false" data-category="advanced"><i class="material-icons">tune</i><span>Advanced</span><small>Fine controls</small></button>
+          </nav>
+          <div class="settings-main">
+            <section class="settings-page active" role="tabpanel" data-page="appearance">
+              <h3 class="page-heading">Make it yours <span>APPEARANCE</span></h3>
+              <div class="control"><label for="transparency">Panel transparency <output data-value="transparency"></output></label><input id="transparency" type="range" min="55" max="100" value="100"></div>
           <div class="control"><label for="roundness">Corner roundness <output data-value="roundness"></output></label><input id="roundness" type="range" min="0" max="28" value="10"></div>
           <div class="control"><label for="blur">Background blur <output data-value="blur"></output></label><input id="blur" type="range" min="0" max="24" value="0"></div>
           <div class="control"><label for="dim">Wallpaper dimming <output data-value="dim"></output></label><input id="dim" type="range" min="0" max="70" value="0"></div>
@@ -49,16 +95,22 @@ class AppearanceSettings extends Component {
           <div class="control"><label for="text-scale">Link text size <output data-value="text-scale"></output></label><input id="text-scale" type="range" min="80" max="130" value="100"></div>
           <div class="control"><label for="spacing">Status bar spacing</label><select id="spacing"><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></div>
           <div class="control"><label for="accent">Accent colour</label><input id="accent" type="color" value="${CONFIG.palette.mauve}"></div>
-          <h3 class="section-title">Show in the status bar</h3>
-          <div class="widget-switches">
+            </section>
+            <section class="settings-page" role="tabpanel" data-page="widgets">
+              <h3 class="page-heading">Your dashboard <span>WIDGETS</span></h3>
+              <h3 class="section-title">Show in the status bar</h3>
+              <div class="widget-switches">
             <label><input id="show-clock" type="checkbox"> Clock</label>
             <label><input id="show-weather" type="checkbox"> Weather</label>
             <label><input id="show-battery" type="checkbox"> Battery</label>
             <label><input id="show-online" type="checkbox"> Online status</label>
             <label><input id="show-music" type="checkbox"> Music button</label>
           </div>
-          <h3 class="section-title">Website appearance</h3>
-          <div class="website-settings">
+            </section>
+            <section class="settings-page" role="tabpanel" data-page="websites">
+              <h3 class="page-heading">Across the web <span>WEBSITE APPEARANCE</span></h3>
+              <h3 class="section-title">Website appearance</h3>
+              <div class="website-settings">
             <div class="control"><label><span>Enable website styling</span><input id="websites-enabled" type="checkbox"></label></div>
             <p class="help">Applies colours and typography to ordinary HTTP and HTTPS pages while the companion extension is installed.</p>
             <div class="website-grid">
@@ -73,12 +125,17 @@ class AppearanceSettings extends Component {
             <div class="control"><label for="websites-spacing">Page spacing</label><select id="websites-spacing"><option value="compact">Compact</option><option value="normal">Normal</option><option value="comfortable">Comfortable</option></select></div>
             <p class="help website-status" role="status">Website styling settings are saved on this device. The companion extension applies them to pages.</p>
           </div>
-          <h3 class="section-title">Hide elements by site</h3>
-          <div class="element-hiding">
+            </section>
+            <section class="settings-page" role="tabpanel" data-page="advanced">
+              <h3 class="page-heading">Power user tools <span>ADVANCED</span></h3>
+              <h3 class="section-title">Hide elements by site</h3>
+              <div class="element-hiding">
             <div class="control"><label><span>Enable element hiding</span><input id="hiding-enabled" type="checkbox"></label></div>
             <p class="help">On a website, click the Startpage extension button and choose “Start element picker”, or press Alt+Shift+P. Click an element to hide it. This works independently of website styling.</p>
             <div class="control"><label for="hidden-rules">Hidden elements by site</label><textarea id="hidden-rules" spellcheck="false" placeholder="example.com | .advertisement\nnews.example.com | #signup-banner"></textarea></div>
             <p class="help hiding-status" role="status">Element hiding settings are saved on this device.</p>
+          </div>
+            </section>
           </div>
           <p class="help">Your appearance choices are saved in this browser only.</p>
           <div class="actions"><button type="button" class="reset">Reset defaults</button><button type="button" class="done">Done</button></div>
@@ -136,6 +193,27 @@ class AppearanceSettings extends Component {
   bindSettings() {
     const dialog = this.shadow.querySelector(".settings-dialog");
     const toggle = this.shadow.querySelector(".settings-toggle");
+    const categoryButtons = [...this.shadow.querySelectorAll(".category")];
+    const settingsPages = [...this.shadow.querySelectorAll(".settings-page")];
+    const activateCategory = (category) => {
+      categoryButtons.forEach((button) => {
+        const active = button.dataset.category === category;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+        button.tabIndex = active ? 0 : -1;
+      });
+      settingsPages.forEach((page) => page.classList.toggle("active", page.dataset.page === category));
+    };
+    categoryButtons.forEach((button, index) => {
+      button.addEventListener("click", () => activateCategory(button.dataset.category));
+      button.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+        event.preventDefault();
+        const next = (index + (event.key === "ArrowDown" ? 1 : -1) + categoryButtons.length) % categoryButtons.length;
+        categoryButtons[next].focus();
+        activateCategory(categoryButtons[next].dataset.category);
+      });
+    });
     const controls = ["transparency", "roundness", "blur", "dim", "panel-width", "text-scale", "spacing", "accent"];
     const websiteControls = ["websites-background", "websites-text", "websites-accent", "websites-border", "websites-opacity", "websites-blur", "websites-font", "websites-spacing"];
     const rulesInput = this.shadow.querySelector("#hidden-rules");
