@@ -58,6 +58,42 @@
       return;
     }
 
+    const browserToolsTypes = new Set([
+      "browser-tools-open-dashboard",
+      "browser-tools-workspaces-get",
+      "browser-tools-workspace-save",
+      "browser-tools-workspace-restore",
+      "browser-tools-workspace-delete",
+      "browser-tools-workspace-rename",
+      "browser-tools-focus-get",
+      "browser-tools-focus-set",
+      "browser-tools-focus-toggle",
+      "browser-tools-diagnostics",
+      "browser-tools-settings-get",
+      "browser-tools-settings-set",
+      "browser-tools-saved-links",
+      "browser-tools-notes-get",
+      "browser-tools-notes-set",
+    ]);
+    if (browserToolsTypes.has(message?.type) && typeof message.requestId === "string") {
+      const payload = {
+        type: message.type,
+        name: message.name,
+        id: message.id,
+        settings: message.settings,
+        notes: message.notes,
+      };
+      chrome.runtime.sendMessage(payload, (response) => {
+        const error = chrome.runtime.lastError?.message;
+        window.postMessage({
+          type: "browser-tools-response",
+          requestId: message.requestId,
+          response: error ? { ok: false, error } : response,
+        }, location.origin);
+      });
+      return;
+    }
+
     if (message?.type !== "startpage-media-request" || typeof message.requestId !== "string") return;
     const allowedActions = new Set(["getState", "play", "pause", "toggle", "seek", "volume"]);
     if (!allowedActions.has(message.action)) return;
