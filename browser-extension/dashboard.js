@@ -185,12 +185,12 @@ $("#pause-focus").addEventListener("click", async () => {
 });
 
 
-const sendUpdate = (type, extra = {}) => chrome.runtime.sendMessage({ type: \`browser-updates-\${type}\`, ...extra });
+const sendUpdate = (type, extra = {}) => chrome.runtime.sendMessage({ type: `browser-updates-${type}`, ...extra });
 
 function renderSources(sources) {
   const list = $("#source-list");
   list.replaceChildren();
-  $("#source-count").textContent = \`\${sources.length} sources\`;
+  $("#source-count").textContent = `${sources.length} sources`;
   if (!sources.length) {
     const empty = document.createElement("p");
     empty.className = "empty";
@@ -205,7 +205,7 @@ function renderSources(sources) {
     const title = document.createElement("strong");
     title.textContent = source.name;
     const detail = document.createElement("small");
-    detail.textContent = \`\${source.category} · \${source.type.toUpperCase()}\${source.lastError ? " · " + source.lastError : ""}\`;
+    detail.textContent = `${source.category} · ${source.type.toUpperCase()}${source.lastError ? " · " + source.lastError : ""}`;
     info.append(title, detail);
     const actions = document.createElement("div");
     actions.className = "row-actions";
@@ -221,7 +221,7 @@ function renderSources(sources) {
     remove.className = "danger";
     remove.textContent = "remove";
     remove.addEventListener("click", async () => {
-      if (!window.confirm(\`Remove "\${source.name}" from the update sources?\`)) return;
+      if (!window.confirm(`Remove "${source.name}" from the update sources?`)) return;
       const result = await sendUpdate("source-remove", { id: source.id });
       if (!result?.ok) return setStatus(result?.error || "could not remove source");
       renderSources(result.sources || []);
@@ -246,7 +246,7 @@ function renderUpdates(updates) {
     const row = document.createElement("article");
     row.className = "update-entry";
     const meta = document.createElement("small");
-    meta.textContent = \`\${item.category} · \${item.source}\`;
+    meta.textContent = `${item.category} · ${item.source}`;
     const link = document.createElement("a");
     link.href = item.url;
     link.target = "_blank";
@@ -286,7 +286,7 @@ async function loadUpdates() {
   }
   $("#update-status").textContent = "connected";
   $("#update-connection-help").textContent = "Connected to your Google Apps Script collector. It runs on its own six-hour schedule.";
-  $("#update-last-run").textContent = result.lastRun ? \`last collection: \${new Date(result.lastRun).toLocaleString()}\` : "waiting for first collection";
+  $("#update-last-run").textContent = result.lastRun ? `last collection: ${new Date(result.lastRun).toLocaleString()}` : "waiting for first collection";
   renderSources(result.sources || []);
   renderUpdates(result.updates || []);
 }
