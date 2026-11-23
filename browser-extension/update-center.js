@@ -11,6 +11,7 @@ async function readUpdateSettings() {
     key: String(settings.updateApiKey || "").trim(),
     topics: Array.isArray(settings.updateTopics) ? settings.updateTopics : ["vex", "xbox", "fortnite", "browser"],
     notifications: settings.browserNotifications === true,
+    frequency: settings.updateFrequency || "6h",
   };
 }
 
@@ -104,7 +105,8 @@ async function getUpdateFeed() {
 async function updateAlarmSetup() {
   const settings = await readUpdateSettings();
   if (validUpdateEndpoint(settings.url) && settings.key) {
-    await chrome.alarms.create(UPDATE_REFRESH_ALARM, { periodInMinutes: 60 });
+    const intervals = { "6h": 360, "12h": 720, daily: 1440, weekly: 10080 };
+    await chrome.alarms.create(UPDATE_REFRESH_ALARM, { periodInMinutes: intervals[settings.frequency] || 360 });
   } else {
     await chrome.alarms.clear(UPDATE_REFRESH_ALARM);
   }
@@ -112,8 +114,17 @@ async function updateAlarmSetup() {
 
 chrome.runtime.onInstalled.addListener(() => updateAlarmSetup().catch(recordDiagnosticError));
 chrome.runtime.onStartup.addListener(() => updateAlarmSetup().catch(recordDiagnosticError));
+async function syncRemoteFrequency() {
+  const settings = await readUpdateSettings();
+  if (!validUpdateEndpoint(settings.url) || !settings.key) return;
+  await updateApiRequest("set-frequency", { frequency: settings.frequency });
+}
+
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.browserFeatureSettings) updateAlarmSetup().catch(recordDiagnosticError);
+  if (area === "local" && changes.browserFeatureSettings) {
+    updateAlarmSetup().catch(recordDiagnosticError);
+    syncRemoteFrequency().catch(recordDiagnosticError);
+  }
 });
 chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === UPDATE_REFRESH_ALARM) refreshUpdateFeed(true).catch(recordDiagnosticError);
