@@ -8,10 +8,11 @@ function send(type, extra = {}) {
 }
 
 async function loadCommands() {
-  const [workspaceResult, savedResult, openTabs] = await Promise.all([
+  const [workspaceResult, savedResult, openTabs, settingsResult] = await Promise.all([
     send("workspaces-get"),
     send("saved-links"),
     chrome.tabs.query({}),
+    send("settings-get"),
   ]);
   commands = [
     { id: "dashboard", title: "Open browser dashboard", detail: "Workspaces, focus mode, and diagnostics", run: () => chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") }) },
@@ -20,6 +21,7 @@ async function loadCommands() {
       if (name) await send("workspace-save", { name });
     } },
     { id: "focus-toggle", title: "Toggle focus mode", detail: "Turn your focus profile on or off", run: () => send("focus-toggle") },
+    ...((workspaceResult?.workspaces || []).filter((item) => item.id === settingsResult?.settings?.defaultWorkspaceId).map((workspace) => ({ id: "default-workspace", title: `Restore default workspace: ${workspace.name}`, detail: `${workspace.tabs?.length || 0} saved tabs`, run: () => send("workspace-restore", { id: workspace.id }) }))),
     { id: "diagnostics", title: "View browser diagnostics", detail: "Tab counts, storage, workspaces, and extension status", run: () => chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html#diagnostics") }) },
     ...(workspaceResult?.workspaces || []).map((workspace) => ({
       id: `workspace-${workspace.id}`,
