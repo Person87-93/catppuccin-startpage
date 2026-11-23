@@ -176,7 +176,7 @@ class AppearanceSettings extends Component {
               <div class="control"><label><span>Xbox sales & releases</span><input id="update-xbox" type="checkbox"></label></div>
               <div class="control"><label><span>Fortnite updates</span><input id="update-fortnite" type="checkbox"></label></div>
               <div class="control"><label><span>Browser & extension news</span><input id="update-browser" type="checkbox"></label></div>
-              <div class="control"><label for="update-frequency">Collection preference</label><select id="update-frequency"><option value="daily">Daily summary preference</option><option value="weekly">Weekly summary preference</option></select></div>
+              <div class="control"><label for="update-frequency">Collection frequency</label><select id="update-frequency"><option value="6h">Every 6 hours</option><option value="12h">Every 12 hours</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select></div>
               <div class="control"><label for="update-api-url">Google Apps Script web app URL</label><input id="update-api-url" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
               <div class="control"><label for="update-api-key">Apps Script API key</label><input id="update-api-key" type="password" autocomplete="off" placeholder="paste the key from the setup log"></div>
               <p class="help">Connect your own Google Apps Script deployment. The key is stored in extension-local storage and is not copied into the startpage's saved settings.</p>
@@ -233,7 +233,7 @@ class AppearanceSettings extends Component {
         defaultWorkspaceId: "",
         contextMenuEnabled: true,
         focus: { enabled: false, sites: [], schedule: { enabled: false, start: "09:00", end: "17:00", days: [1, 2, 3, 4, 5] } },
-        updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "daily", apiUrl: "", apiKey: "" },
+        updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "6h", apiUrl: "", apiKey: "" },
         notifications: { browser: false, email: false },
         diagnosticsHistory: true,
       },
@@ -474,6 +474,7 @@ class AppearanceSettings extends Component {
         updateApiUrl: this.browserFeatureSettings.updates.apiUrl,
         updateApiKey: this.browserFeatureSettings.updates.apiKey,
         updateTopics: this.browserFeatureSettings.updates.topics,
+        updateFrequency: this.browserFeatureSettings.updates.frequency,
       } }, location.origin);
       window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-${Date.now()}`, settings: focus }, location.origin);
     };
@@ -512,7 +513,7 @@ class AppearanceSettings extends Component {
     ["vex", "xbox", "fortnite", "browser"].forEach((topic) => {
       this.shadow.querySelector("#update-" + topic).checked = (browserFeatures.updates.topics || []).includes(topic);
     });
-    this.shadow.querySelector("#update-frequency").value = browserFeatures.updates.frequency || "daily";
+    this.shadow.querySelector("#update-frequency").value = browserFeatures.updates.frequency || "6h";
     this.shadow.querySelector("#browser-notifications").checked = browserFeatures.notifications.browser === true;
     this.shadow.querySelector("#diagnostics-history").checked = browserFeatures.diagnosticsHistory !== false;
     const featureControls = [
@@ -537,8 +538,8 @@ class AppearanceSettings extends Component {
       contextMenuEnabled: browserFeatures.contextMenuEnabled,
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
       browserNotifications: browserFeatures.notifications.browser,
-      updateApiUrl: browserFeatures.updates.apiUrl || "",
       updateTopics: browserFeatures.updates.topics || ["vex", "xbox", "fortnite", "browser"],
+      updateFrequency: browserFeatures.updates.frequency || "6h",
     } }, location.origin);
     window.postMessage({ type: "browser-tools-settings-get", requestId: updateConfigRequestId }, location.origin);
     window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-init-${Date.now()}`, settings: browserFeatures.focus }, location.origin);
