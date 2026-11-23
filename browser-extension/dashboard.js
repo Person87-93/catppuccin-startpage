@@ -102,9 +102,11 @@ async function loadDiagnostics() {
     ["saved workspaces", data.workspaceCount],
     ["saved workspace tabs", data.workspaceTabCount],
     ["tab groups", data.tabGroupCount],
+    ["tab groups", data.tabGroupCount],
     ["focus mode", data.focusActive ? "active" : "off"],
     ["focus websites", data.focusSiteCount],
     ["local storage", `${(data.localStorageBytes / 1024).toFixed(1)} KB`],
+    ["active page load", data.pagePerformance?.loadCompleteMs ? `${data.pagePerformance.loadCompleteMs} ms` : "unavailable"],
     ["active page load", data.pagePerformance?.loadCompleteMs ? `${data.pagePerformance.loadCompleteMs} ms` : "unavailable"],
   ];
   const grid = $("#diagnostics-grid");
@@ -155,6 +157,19 @@ $("#refresh-diagnostics").addEventListener("click", loadDiagnostics);
 
 Promise.all([loadWorkspaces(), loadFocus(), loadDiagnostics()]).catch((error) => setStatus(error.message || "dashboard could not load"));
 if (location.hash === "#diagnostics") $("#diagnostics").scrollIntoView();
+
+
+$("#enable-notifications").addEventListener("click", async () => {
+  try {
+    const granted = await chrome.permissions.request({ permissions: ["notifications"] });
+    if (!granted) return setStatus("notification permission was not granted.");
+    const current = await send("settings-get");
+    await send("settings-set", { settings: { ...(current.settings || {}), browserNotifications: true } });
+    setStatus("browser notifications are enabled.");
+  } catch (error) {
+    setStatus(error.message || "could not request notification permission.");
+  }
+});
 
 
 $("#enable-notifications").addEventListener("click", async () => {
