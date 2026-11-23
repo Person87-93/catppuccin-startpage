@@ -176,8 +176,11 @@ class AppearanceSettings extends Component {
               <div class="control"><label><span>Xbox sales & releases</span><input id="update-xbox" type="checkbox"></label></div>
               <div class="control"><label><span>Fortnite updates</span><input id="update-fortnite" type="checkbox"></label></div>
               <div class="control"><label><span>Browser & extension news</span><input id="update-browser" type="checkbox"></label></div>
-              <div class="control"><label for="update-frequency">Research frequency</label><select id="update-frequency"><option value="daily">Daily</option><option value="weekly">Weekly</option></select></div>
-              <p class="help">The Google-only callback handoff is still being verified. These preferences can be saved now, but automatic collection and delivery are not active yet.</p>
+              <div class="control"><label for="update-frequency">Collection preference</label><select id="update-frequency"><option value="daily">Daily summary preference</option><option value="weekly">Weekly summary preference</option></select></div>
+              <div class="control"><label for="update-api-url">Google Apps Script web app URL</label><input id="update-api-url" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
+              <div class="control"><label for="update-api-key">Apps Script API key</label><input id="update-api-key" type="password" autocomplete="off" placeholder="paste the key from the setup log"></div>
+              <p class="help">Connect your own Google Apps Script deployment. The key is stored in extension-local storage and is not copied into the startpage's saved settings.</p>
+              <div class="control"><button type="button" id="open-update-dashboard">Open update center</button></div>
             </section>
             <section class="settings-page" role="tabpanel" data-page="notifications">
               <h3 class="page-heading">Choose how you hear <span>NOTIFICATIONS</span></h3>
@@ -230,7 +233,7 @@ class AppearanceSettings extends Component {
         defaultWorkspaceId: "",
         contextMenuEnabled: true,
         focus: { enabled: false, sites: [], schedule: { enabled: false, start: "09:00", end: "17:00", days: [1, 2, 3, 4, 5] } },
-        updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "daily" },
+        updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "daily", apiUrl: "", apiKey: "" },
         notifications: { browser: false, email: false },
         diagnosticsHistory: true,
       },
@@ -299,6 +302,7 @@ class AppearanceSettings extends Component {
     let publishHidingTimer = null;
     let lastPublishedWebsiteAppearance = null;
     let lastPublishedElementHiding = null;
+    const updateConfigRequestId = `update-config-${Date.now()}`;
     const parseHiddenRules = (text) => {
       const rules = {};
       for (const line of text.split("\n")) {
@@ -321,6 +325,16 @@ class AppearanceSettings extends Component {
     window.addEventListener("message", (event) => {
       if (event.source !== window || event.origin !== location.origin) return;
       const message = event.data;
+      if (message?.type === "browser-tools-response" && message.requestId === updateConfigRequestId && message.response?.ok) {
+        const remote = message.response.settings || {};
+        this.browserFeatureSettings.updates = {
+          ...this.browserFeatureSettings.updates,
+          apiUrl: remote.updateApiUrl || this.browserFeatureSettings.updates.apiUrl || "",
+          apiKey: remote.updateApiKey || "",
+        };
+        this.shadow.querySelector("#update-api-url").value = this.browserFeatureSettings.updates.apiUrl;
+        this.shadow.querySelector("#update-api-key").value = this.browserFeatureSettings.updates.apiKey;
+      }
       if (message?.type === "startpage-site-settings-response" && message.requestId === extensionSettingsRequest) {
         extensionConnected = Boolean(message.settings);
         websiteStatus.textContent = extensionConnected
@@ -389,7 +403,8 @@ class AppearanceSettings extends Component {
       this.shadow.querySelector('[data-value="websites-opacity"]').textContent = `${websiteAppearance.opacity}%`;
       this.shadow.querySelector('[data-value="websites-blur"]').textContent = `${websiteAppearance.blur}px`;
       this.shadow.querySelector('[data-value="text-scale"]').textContent = `${textScale}%`;
-      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ transparency, roundness, blur, dim, panelWidth, textScale, spacing: settings.spacing, accent: settings.accent, widgets, websiteAppearance, elementHiding, browserFeatures: this.browserFeatureSettings }));
+      const localBrowserFeatures = { ...this.browserFeatureSettings, updates: { ...this.browserFeatureSettings.updates, apiKey: "" } };
+      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ transparency, roundness, blur, dim, panelWidth, textScale, spacing: settings.spacing, accent: settings.accent, widgets, websiteAppearance, elementHiding, browserFeatures: localBrowserFeatures }));
       if (publish) {
         const serializedWebsiteAppearance = JSON.stringify(websiteAppearance);
         if (serializedWebsiteAppearance !== lastPublishedWebsiteAppearance) {
@@ -404,7 +419,8 @@ class AppearanceSettings extends Component {
     const updateElementHiding = (publish = true) => {
       const elementHiding = { enabled: hidingEnabled.checked, hiddenElementsByHost: parseHiddenRules(rulesInput.value) };
       const saved = JSON.parse(localStorage.getItem(AppearanceSettings.storageKey) || "{}");
-      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ ...saved, elementHiding, browserFeatures: this.browserFeatureSettings }));
+      const localBrowserFeatures = { ...this.browserFeatureSettings, updates: { ...this.browserFeatureSettings.updates, apiKey: "" } };
+      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ ...saved, elementHiding, browserFeatures: localBrowserFeatures }));
       if (!publish) return;
       const serialized = JSON.stringify(elementHiding);
       if (serialized !== lastPublishedElementHiding) {
@@ -436,6 +452,8 @@ class AppearanceSettings extends Component {
         updates: {
           topics: ["vex", "xbox", "fortnite", "browser"].filter((topic) => this.shadow.querySelector("#update-" + topic).checked),
           frequency: this.shadow.querySelector("#update-frequency").value,
+          apiUrl: this.shadow.querySelector("#update-api-url").value.trim(),
+          apiKey: this.shadow.querySelector("#update-api-key").value.trim(),
         },
         notifications: {
           browser: this.shadow.querySelector("#browser-notifications").checked,
@@ -452,6 +470,9 @@ class AppearanceSettings extends Component {
         contextMenuEnabled: this.browserFeatureSettings.contextMenuEnabled,
         diagnosticsHistory: this.browserFeatureSettings.diagnosticsHistory,
         browserNotifications: this.browserFeatureSettings.notifications.browser,
+        updateApiUrl: this.browserFeatureSettings.updates.apiUrl,
+        updateApiKey: this.browserFeatureSettings.updates.apiKey,
+        updateTopics: this.browserFeatureSettings.updates.topics,
       } }, location.origin);
       window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-${Date.now()}`, settings: focus }, location.origin);
     };
@@ -496,14 +517,14 @@ class AppearanceSettings extends Component {
     const featureControls = [
       "#workspace-save-before-restore", "#workspace-default", "#context-menu-enabled", "#focus-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
       ".focus-days input", "#update-vex", "#update-xbox", "#update-fortnite", "#update-browser",
-      "#update-frequency", "#browser-notifications", "#diagnostics-history",
+      "#update-frequency", "#update-api-url", "#update-api-key", "#browser-notifications", "#diagnostics-history",
     ];
     featureControls.forEach((selector) => this.shadow.querySelectorAll(selector).forEach((control) => {
       control.addEventListener("change", publishBrowserFeatureSettings);
       control.addEventListener("input", publishBrowserFeatureSettings);
     }));
     const openDashboard = () => window.postMessage({ type: "browser-tools-open-dashboard", requestId: `dashboard-${Date.now()}` }, location.origin);
-    ["#open-browser-dashboard", "#open-focus-dashboard", "#open-notification-dashboard", "#open-diagnostics-dashboard"].forEach((selector) => {
+    ["#open-browser-dashboard", "#open-focus-dashboard", "#open-notification-dashboard", "#open-diagnostics-dashboard", "#open-update-dashboard"].forEach((selector) => {
       this.shadow.querySelector(selector).addEventListener("click", openDashboard);
     });
     this.shadow.querySelector("#open-shortcut-settings").addEventListener("click", () => {
@@ -515,7 +536,11 @@ class AppearanceSettings extends Component {
       contextMenuEnabled: browserFeatures.contextMenuEnabled,
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
       browserNotifications: browserFeatures.notifications.browser,
+      updateApiUrl: browserFeatures.updates.apiUrl || "",
+      updateApiKey: "",
+      updateTopics: browserFeatures.updates.topics || ["vex", "xbox", "fortnite", "browser"],
     } }, location.origin);
+    window.postMessage({ type: "browser-tools-settings-get", requestId: updateConfigRequestId }, location.origin);
     window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-init-${Date.now()}`, settings: browserFeatures.focus }, location.origin);
     const settingIds = { "panel-width": "panelWidth", "text-scale": "textScale" };
     controls.forEach((id) => { this.shadow.querySelector(`#${id}`).value = settings[settingIds[id] || id]; });
