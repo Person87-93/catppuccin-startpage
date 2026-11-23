@@ -10,29 +10,52 @@ class AppearanceSettings extends Component {
     return `
       .settings-toggle { height: 100%; display: flex; align-items: center; padding: 0; border: 0; background: transparent; color: ${CONFIG.palette.text}; cursor: pointer; }
       .settings-toggle i { font-size: 16pt; }
-      .settings-dialog { width: min(430px, calc(100vw - 32px)); max-height: min(90vh, 700px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
-      .settings-dialog::backdrop { background: rgb(0 0 0 / 55%); }
-      .panel { width: 100%; max-height: min(90vh, 700px); overflow: auto; padding: 22px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 16px 50px rgb(0 0 0 / 40%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Nunito', 'Roboto', sans-serif; }
-      .heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-      .heading h2 { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; font: 700 22px 'Nunito', sans-serif; letter-spacing: -.02em; }
+      .settings-dialog { width: min(790px, calc(100vw - 32px)); max-height: min(92vh, 820px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
+      .settings-dialog::backdrop { background: rgb(10 10 18 / 68%); backdrop-filter: blur(7px); }
+      .panel { width: 100%; max-height: min(92vh, 820px); overflow: auto; box-sizing: border-box; padding: 26px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 18px; background: linear-gradient(145deg, color-mix(in srgb, ${CONFIG.palette.mantle} 97%, ${CONFIG.palette.mauve}), color-mix(in srgb, ${CONFIG.palette.base} 96%, ${CONFIG.palette.blue})); color: ${CONFIG.palette.text}; box-shadow: 0 22px 70px rgb(0 0 0 / 48%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Nunito', 'Roboto', sans-serif; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+      .heading { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 4px 0 16px; border-bottom: 1px solid ${CONFIG.palette.surface1}; }
+      .heading h2 { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; font: 800 26px 'Nunito', sans-serif; letter-spacing: -.035em; margin: 0; }
+      .heading::after { content: "PERSONALIZE YOUR SPACE"; margin-left: auto; margin-right: 18px; color: ${CONFIG.palette.subtext0}; font: 700 10px 'Raleway', sans-serif; letter-spacing: .16em; }
       .heading button { border: 0; background: none; color: ${CONFIG.palette.text}; cursor: pointer; }
-      .control { margin: 16px 0; }
-      .section-title { margin: 24px 0 10px; padding-bottom: 7px; border-bottom: 1px solid ${CONFIG.palette.surface1}; color: ${CONFIG.palette.mauve}; font: 700 11px 'Raleway', 'Nunito', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+      .control { min-width: 0; margin: 7px 0; padding: 13px 14px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 12px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 42%, transparent); transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+      .control:hover { border-color: ${CONFIG.palette.mauve}; background: color-mix(in srgb, ${CONFIG.palette.surface0} 68%, transparent); transform: translateY(-1px); }
+      .section-title { grid-column: 1 / -1; margin: 22px 0 5px; padding: 0 0 9px 2px; border-bottom: 1px solid ${CONFIG.palette.surface1}; color: ${CONFIG.palette.mauve}; font: 800 11px 'Raleway', 'Nunito', sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+      .section-title::before { content: "✦"; margin-right: 8px; color: ${CONFIG.palette.peach}; }
       .control label { display: flex; justify-content: space-between; margin-bottom: 7px; color: ${CONFIG.palette.text}; font-weight: 700; }
-      .control input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); }
+      .control input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); cursor: pointer; }
+      .control input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(90deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); }
+      .control input[type="range"]::-webkit-slider-thumb { margin-top: -5px; }
+      .control output { color: ${CONFIG.palette.lavender || CONFIG.palette.blue}; font: 800 12px 'Roboto', sans-serif; font-variant-numeric: tabular-nums; }
+      .control select { outline: none; transition: border-color .15s ease; }
+      .control select:focus, .element-hiding textarea:focus { border-color: ${CONFIG.palette.mauve}; }
       .control input[type="color"] { width: 44px; height: 30px; border: 0; background: transparent; cursor: pointer; }
       .control select { width: 100%; padding: 9px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 6px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; }
-      .widget-switches { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
-      .widget-switches label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+      .widget-switches { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+      .widget-switches label { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 0 12px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 10px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 42%, transparent); cursor: pointer; font-weight: 700; transition: .18s ease; }
+      .widget-switches label:hover { border-color: ${CONFIG.palette.teal}; background: color-mix(in srgb, ${CONFIG.palette.teal} 10%, transparent); }
+      .widget-switches input { width: 16px; height: 16px; }
       .widget-switches input { accent-color: var(--startpage-accent, var(--accent)); }
-      .website-settings { margin-top: 12px; padding-top: 8px; border-top: 1px solid ${CONFIG.palette.surface1}; }
-      .element-hiding textarea { width: 100%; min-height: 76px; resize: vertical; box-sizing: border-box; padding: 8px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 6px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; font: 12px monospace; }
+      .website-settings { grid-column: 1 / -1; margin-top: 4px; padding: 10px 14px 14px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 12px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 25%, transparent); display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+      .website-settings > .help, .website-settings > .website-grid { grid-column: 1 / -1; }
+      .website-settings > .control:first-child { grid-column: 1 / -1; }
+      .website-settings > .control { background: transparent; border: 0; padding: 7px 2px; }
+      .website-settings > .control:hover { transform: none; background: transparent; }
+      .website-settings > .website-grid .control { background: transparent; border: 0; padding: 4px 2px; }
+      .element-hiding { grid-column: 1 / -1; padding: 12px 14px; border: 1px solid ${CONFIG.palette.surface0}; border-radius: 12px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 25%, transparent); }
+      .element-hiding .control { background: transparent; border: 0; padding: 5px 0; }
+      .element-hiding .control:hover { transform: none; }
+      .element-hiding textarea { width: 100%; min-height: 76px; resize: vertical; box-sizing: border-box; padding: 10px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 8px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; font: 12px monospace; }
       .website-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
       .website-grid .control { margin: 8px 0; }
       .website-colour { display: flex; align-items: center; justify-content: space-between; }
-      .help { color: ${CONFIG.palette.subtext1}; font-size: 12px; line-height: 1.6; }
-      .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-      .actions button { border: 0; border-radius: 6px; padding: 9px 13px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
+      .help { grid-column: 1 / -1; color: ${CONFIG.palette.subtext1}; font-size: 12px; line-height: 1.6; }
+      .panel > .help { margin: 12px 0 0; }
+      .actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 15px; border-top: 1px solid ${CONFIG.palette.surface1}; }
+      .actions button { border: 1px solid ${CONFIG.palette.surface1}; border-radius: 8px; padding: 10px 15px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; font-weight: 800; transition: .18s ease; }
+      .actions button:hover { border-color: ${CONFIG.palette.mauve}; filter: brightness(1.08); transform: translateY(-1px); }
+      .actions .done { background: linear-gradient(110deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); color: ${CONFIG.palette.crust}; border: 0; }
+      .website-status, .hiding-status { margin-top: 8px; }
+      @media (max-width: 640px) { .panel { grid-template-columns: 1fr; padding: 17px; } .heading::after { display: none; } .section-title, .widget-switches, .website-settings, .element-hiding, .actions, .panel > .help { grid-column: 1; } .widget-switches { grid-template-columns: 1fr 1fr; } .website-settings { grid-template-columns: 1fr; } }
     `;
   }
 
