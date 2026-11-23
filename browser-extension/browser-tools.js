@@ -69,6 +69,18 @@ async function saveWorkspace(name) {
 }
 
 async function restoreWorkspace(id) {
+  const featureState = await chrome.storage.local.get(FEATURE_SETTINGS_KEY);
+  if (featureState[FEATURE_SETTINGS_KEY]?.saveBeforeRestore) {
+    const active = await chrome.storage.local.get("activeWorkspaceId");
+    const currentWorkspace = (await readWorkspaces()).find((item) => item.id === active.activeWorkspaceId);
+    if (currentWorkspace) {
+      const currentTabs = await chrome.tabs.query({ currentWindow: true });
+      const captured = currentTabs.filter((tab) => tab.url && /^https?:/i.test(tab.url))
+        .map((tab) => ({ url: tab.url, title: tab.title || tab.url, favIconUrl: tab.favIconUrl || "" }));
+      await writeWorkspaces((await readWorkspaces()).map((item) => item.id === currentWorkspace.id
+        ? { ...item, tabs: captured, updatedAt: new Date().toISOString() } : item));
+    }
+  }
   const workspaces = await readWorkspaces();
   const workspace = workspaces.find((item) => item.id === id);
   if (!workspace) return { ok: false, error: "That workspace could not be found." };
@@ -173,7 +185,7 @@ async function showFocusNotification(title) {
   if (!stored[FEATURE_SETTINGS_KEY]?.browserNotifications || !chrome.notifications) return;
   chrome.notifications.create("browser-focus-status", {
     type: "basic",
-    iconUrl: "icons/icon128.png",
+    iconUrl: "src/img/favicon.png",
     title,
     message: "Your selected focus schedule is active.",
   }).catch(() => {});
@@ -188,6 +200,26 @@ async function getDiagnostics() {
     chrome.storage.local.get(null),
   ]);
   const bytes = new Blob([JSON.stringify(stored)]).size;
+  let tabGroupCount = 0;
+  try { tabGroupCount = (await chrome.tabGroups.query({})).length; } catch {}
+  let pagePerformance = null;
+  const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (activeTab?.id && /^https?:/i.test(activeTab.url || "")) {
+    try {
+      const [measurement] = await chrome.scripting.executeScript({
+        target: { tabId: activeTab.id },
+        func: () => {
+          const navigation = performance.getEntriesByType("navigation")[0];
+          return navigation ? {
+            domInteractiveMs: Math.round(navigation.domInteractive),
+            loadCompleteMs: Math.round(navigation.loadEventEnd),
+            transferBytes: navigation.transferSize || 0,
+          } : null;
+        },
+      });
+      pagePerformance = measurement?.result || null;
+    } catch {}
+  }
   const errors = Array.isArray(stored[DIAGNOSTICS_KEY]) ? stored[DIAGNOSTICS_KEY].slice(-20) : [];
   return {
     extensionVersion: chrome.runtime.getManifest().version,
@@ -195,6 +227,8 @@ async function getDiagnostics() {
     regularTabs: tabs.filter((tab) => /^https?:/i.test(tab.url || "")).length,
     workspaceCount: workspaces.length,
     workspaceTabCount: workspaces.reduce((sum, item) => sum + (item.tabs?.length || 0), 0),
+    tabGroupCount,
+    pagePerformance,
     focusActive: focus.runtime.active,
     focusSiteCount: focus.settings.sites.length,
     localStorageBytes: bytes,
@@ -206,6 +240,8 @@ async function getDiagnostics() {
 async function recordDiagnosticError(error) {
   try {
     const stored = await chrome.storage.local.get(DIAGNOSTICS_KEY);
+    const preferences = await chrome.storage.local.get(FEATURE_SETTINGS_KEY);
+    if (preferences[FEATURE_SETTINGS_KEY]?.diagnosticsHistory === false) return;
     const history = Array.isArray(stored[DIAGNOSTICS_KEY]) ? stored[DIAGNOSTICS_KEY] : [];
     history.push({ message: String(error?.message || error).slice(0, 240), at: new Date().toISOString() });
     await chrome.storage.local.set({ [DIAGNOSTICS_KEY]: history.slice(-50) });
@@ -214,8 +250,9 @@ async function recordDiagnosticError(error) {
   }
 }
 
-async function refreshWorkspaceMenus(workspaces = await readWorkspaces()) {
+async function refreshWorkspaceMenus(workspaces) {
   if (!chrome.contextMenus) return;
+  if (!workspaces) workspaces = await readWorkspaces();
   const items = await chrome.contextMenus.removeAll().catch(() => {});
   void items;
   chrome.contextMenus.create({ id: "startpage-root", title: "Startpage tools", contexts: ["all"] });
@@ -240,6 +277,9 @@ async function openPalette() {
   if (tabs[0]?.id) return chrome.tabs.update(tabs[0].id, { active: true });
   return chrome.tabs.create({ url, active: true });
 }
+
+self.addEventListener("unhandledrejection", (event) => recordDiagnosticError(event.reason));
+self.addEventListener("error", (event) => recordDiagnosticError(event.error || event.message));
 
 chrome.runtime.onInstalled.addListener(() => {
   refreshWorkspaceMenus().catch(recordDiagnosticError);
