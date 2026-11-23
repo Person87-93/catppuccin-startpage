@@ -162,6 +162,7 @@ class AppearanceSettings extends Component {
             </section>
             <section class="settings-page" role="tabpanel" data-page="commands">
               <h3 class="page-heading">Move faster <span>COMMANDS</span></h3>
+              <div class="control"><label><span>Enable right-click tools</span><input id="context-menu-enabled" type="checkbox"></label><p class="help">Adds the Startpage tools submenu to the browser context menu.</p></div>
               <div class="control"><label>Browser-wide command palette</label><strong>Ctrl + Shift + K</strong><p class="help">On macOS, the suggested shortcut is Command + Shift + K.</p></div>
               <div class="control"><label>Right-click menu</label><strong>Startpage tools</strong><p class="help">The submenu adds relevant actions for links and selected text without replacing a website's own context menu.</p></div>
               <p class="help">To change the keyboard shortcut, use Chrome's extension shortcut manager.</p>
@@ -224,6 +225,7 @@ class AppearanceSettings extends Component {
       elementHiding: { enabled: false, hiddenElementsByHost: {} },
       browserFeatures: {
         saveBeforeRestore: false,
+        contextMenuEnabled: true,
         focus: { enabled: false, sites: [], schedule: { enabled: false, start: "09:00", end: "17:00", days: [1, 2, 3, 4, 5] } },
         updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "daily" },
         notifications: { browser: false, email: false },
@@ -425,6 +427,7 @@ class AppearanceSettings extends Component {
       this.browserFeatureSettings = {
         ...this.browserFeatureSettings,
         saveBeforeRestore: this.shadow.querySelector("#workspace-save-before-restore").checked,
+        contextMenuEnabled: this.shadow.querySelector("#context-menu-enabled").checked,
         focus,
         updates: {
           topics: ["vex", "xbox", "fortnite", "browser"].filter((topic) => this.shadow.querySelector("#update-" + topic).checked),
@@ -441,6 +444,7 @@ class AppearanceSettings extends Component {
       const requestId = `features-${Date.now()}`;
       window.postMessage({ type: "browser-tools-settings-set", requestId, settings: {
         saveBeforeRestore: this.browserFeatureSettings.saveBeforeRestore,
+        contextMenuEnabled: this.browserFeatureSettings.contextMenuEnabled,
         diagnosticsHistory: this.browserFeatureSettings.diagnosticsHistory,
         browserNotifications: this.browserFeatureSettings.notifications.browser,
       } }, location.origin);
@@ -451,6 +455,7 @@ class AppearanceSettings extends Component {
     const browserFeatures = settings.browserFeatures;
     this.browserFeatureSettings = browserFeatures;
     this.shadow.querySelector("#workspace-save-before-restore").checked = browserFeatures.saveBeforeRestore === true;
+    this.shadow.querySelector("#context-menu-enabled").checked = browserFeatures.contextMenuEnabled !== false;
     this.shadow.querySelector("#focus-schedule-enabled").checked = browserFeatures.focus.schedule.enabled === true;
     this.shadow.querySelector("#focus-start").value = browserFeatures.focus.schedule.start || "09:00";
     this.shadow.querySelector("#focus-end").value = browserFeatures.focus.schedule.end || "17:00";
@@ -465,7 +470,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelector("#browser-notifications").checked = browserFeatures.notifications.browser === true;
     this.shadow.querySelector("#diagnostics-history").checked = browserFeatures.diagnosticsHistory !== false;
     const featureControls = [
-      "#workspace-save-before-restore", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
+      "#workspace-save-before-restore", "#context-menu-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
       ".focus-days input", "#update-vex", "#update-xbox", "#update-fortnite", "#update-browser",
       "#update-frequency", "#browser-notifications", "#diagnostics-history",
     ];
@@ -482,6 +487,7 @@ class AppearanceSettings extends Component {
     });
     window.postMessage({ type: "browser-tools-settings-set", requestId: `features-init-${Date.now()}`, settings: {
       saveBeforeRestore: browserFeatures.saveBeforeRestore,
+      contextMenuEnabled: browserFeatures.contextMenuEnabled,
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
       browserNotifications: browserFeatures.notifications.browser,
     } }, location.origin);
