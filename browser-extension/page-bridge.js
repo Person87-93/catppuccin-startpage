@@ -61,7 +61,6 @@
     const browserToolsTypes = new Set([
       "browser-tools-open-dashboard",
       "browser-tools-open-shortcut-settings",
-      "browser-tools-focus-set",
       "browser-tools-workspaces-get",
       "browser-tools-workspace-save",
       "browser-tools-workspace-restore",
