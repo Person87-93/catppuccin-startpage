@@ -8,9 +8,10 @@ function send(type, extra = {}) {
 }
 
 async function loadCommands() {
-  const [workspaceResult, savedResult] = await Promise.all([
+  const [workspaceResult, savedResult, openTabs] = await Promise.all([
     send("workspaces-get"),
     send("saved-links"),
+    chrome.tabs.query({}),
   ]);
   commands = [
     { id: "dashboard", title: "Open browser dashboard", detail: "Workspaces, focus mode, and diagnostics", run: () => chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") }) },
@@ -25,6 +26,15 @@ async function loadCommands() {
       title: `Restore workspace: ${workspace.name}`,
       detail: `${workspace.tabs?.length || 0} saved tabs · opens missing tabs without closing anything`,
       run: () => send("workspace-restore", { id: workspace.id }),
+    })),
+    ...openTabs.filter((tab) => tab.id && tab.url).map((tab) => ({
+      id: `tab-${tab.id}`,
+      title: `Switch to tab: ${tab.title || tab.url}`,
+      detail: tab.url,
+      run: async () => {
+        await chrome.windows.update(tab.windowId, { focused: true });
+        await chrome.tabs.update(tab.id, { active: true });
+      },
     })),
     ...(savedResult?.links || []).map((link, index) => ({
       id: `saved-${index}`,
