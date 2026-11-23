@@ -13,6 +13,7 @@ const focusDefaults = {
 
 const featureDefaults = {
   openLastWorkspace: false,
+  defaultWorkspaceId: "",
   saveBeforeRestore: false,
   paletteShortcut: "Ctrl+Shift+K",
   updateTopics: ["vex", "xbox", "fortnite", "browser"],
@@ -106,6 +107,20 @@ async function restoreWorkspace(id) {
 
   await chrome.storage.local.set({ activeWorkspaceId: id });
   return { ok: true, opened: createdIds.length, skipped: workspace.tabs.length - createdIds.length };
+}
+
+async function duplicateWorkspace(id) {
+  const workspaces = await readWorkspaces();
+  const source = workspaces.find((item) => item.id === id);
+  if (!source) return { ok: false, error: "That workspace could not be found." };
+  let name = cleanWorkspaceName(source.name + " copy");
+  let suffix = 2;
+  while (workspaces.some((item) => item.name.toLowerCase() === name.toLowerCase())) {
+    name = cleanWorkspaceName(source.name + " copy " + suffix++);
+  }
+  const duplicate = { ...source, id: crypto.randomUUID(), name, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), tabs: source.tabs.map((tab) => ({ ...tab })) };
+  await writeWorkspaces([...workspaces, duplicate]);
+  return { ok: true, workspace: duplicate };
 }
 
 async function deleteWorkspace(id) {
@@ -365,12 +380,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case "browser-tools-open-shortcut-settings":
         await chrome.tabs.create({ url: "chrome://extensions/shortcuts", active: true });
         return { ok: true };
-      case "browser-tools-workspaces-get":
-        return { ok: true, workspaces: await readWorkspaces() };
+      case "browser-tools-workspaces-get": {
+        const stored = await chrome.storage.local.get(FEATURE_SETTINGS_KEY);
+        return { ok: true, workspaces: await readWorkspaces(), defaultWorkspaceId: stored[FEATURE_SETTINGS_KEY]?.defaultWorkspaceId || "" };
+      }
       case "browser-tools-workspace-save":
         return saveWorkspace(message.name);
       case "browser-tools-workspace-restore":
         return restoreWorkspace(String(message.id || ""));
+      case "browser-tools-workspace-duplicate":
+        return duplicateWorkspace(String(message.id || ""));
       case "browser-tools-workspace-delete":
         return deleteWorkspace(String(message.id || ""));
       case "browser-tools-workspace-rename":
