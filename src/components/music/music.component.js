@@ -13,25 +13,48 @@ class MusicControl extends Component {
 
   style() {
     return `
-      .music-button { height: 100%; display: flex; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: ${CONFIG.palette.text}; font: 300 9pt 'Roboto', sans-serif; cursor: pointer; white-space: nowrap; }
-      .music-button i { color: ${CONFIG.palette.mauve}; font-size: 14pt; }
-      .player-dialog { position: fixed; inset: auto 16px 48px auto; width: min(340px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: min(90vh, 600px); margin: 0; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
+      :host { color: ${CONFIG.palette.text}; }
+      .music-button { height: 100%; display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: transparent; color: ${CONFIG.palette.text}; font: 700 9pt 'Nunito', 'Roboto', sans-serif; cursor: pointer; white-space: nowrap; transition: color .18s ease; }
+      .music-button:hover { color: ${CONFIG.palette.mauve}; }
+      .music-button i { color: ${CONFIG.palette.mauve}; font-size: 16pt; filter: drop-shadow(0 0 7px color-mix(in srgb, ${CONFIG.palette.mauve} 45%, transparent)); }
+      .player-dialog { position: fixed; inset: auto 16px 48px auto; width: min(380px, calc(100vw - 32px)); max-width: calc(100vw - 32px); max-height: min(90vh, 660px); margin: 0; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
       .player-dialog::backdrop { background: transparent; }
-      .player { width: 100%; max-height: min(90vh, 600px); overflow: auto; padding: 16px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 12px 32px rgb(0 0 0 / 35%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 13px 'Nunito', 'Roboto', sans-serif; }
-      .player-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-      .track { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${CONFIG.palette.text}; font: 800 18px 'Nunito', sans-serif; letter-spacing: -.02em; margin-bottom: 5px; }
-      .close-player { flex: none; padding: 3px !important; }
-      .source { color: ${CONFIG.palette.subtext1}; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
-      .controls { display: grid; grid-template-columns: 36px 1fr; align-items: center; gap: 8px; }
-      .player button { border: 0; border-radius: 7px; padding: 7px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
-      .player input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); }
-      .time { display: flex; justify-content: space-between; color: ${CONFIG.palette.subtext1}; font: 600 11px 'Roboto', sans-serif; font-variant-numeric: tabular-nums; margin-top: 3px; }
-      .volume, .file-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-      .volume i { color: ${CONFIG.palette.subtext0}; font-size: 17px; }
+      .player { position: relative; isolation: isolate; width: 100%; max-height: min(90vh, 660px); overflow: auto; box-sizing: border-box; padding: 20px; border: 1px solid color-mix(in srgb, ${CONFIG.palette.mauve} 34%, ${CONFIG.palette.surface1}); border-radius: 18px; background: linear-gradient(145deg, color-mix(in srgb, ${CONFIG.palette.mantle} 96%, ${CONFIG.palette.mauve}), ${CONFIG.palette.base} 54%, color-mix(in srgb, ${CONFIG.palette.mantle} 92%, ${CONFIG.palette.blue})); color: ${CONFIG.palette.text}; box-shadow: 0 18px 48px rgb(0 0 0 / 42%), 0 0 32px color-mix(in srgb, ${CONFIG.palette.mauve} 13%, transparent); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 13px 'Nunito', 'Roboto', sans-serif; }
+      .player::before { content: ''; position: absolute; z-index: -1; width: 190px; height: 190px; top: -105px; right: -70px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ${CONFIG.palette.mauve} 25%, transparent), transparent 70%); pointer-events: none; }
+      .player-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 18px; }
+      .eyebrow { display: flex; align-items: center; gap: 7px; color: ${CONFIG.palette.subtext1}; font: 800 10px 'Nunito', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+      .eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(135deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); box-shadow: 0 0 10px color-mix(in srgb, ${CONFIG.palette.mauve} 65%, transparent); }
+      .close-player { flex: none; width: 30px; height: 30px; display: grid; place-items: center; padding: 0 !important; border: 1px solid ${CONFIG.palette.surface1} !important; border-radius: 10px !important; background: color-mix(in srgb, ${CONFIG.palette.surface0} 70%, transparent) !important; color: ${CONFIG.palette.subtext1} !important; }
+      .close-player:hover { color: ${CONFIG.palette.text} !important; border-color: ${CONFIG.palette.mauve} !important; }
+      .now-playing { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 14px; margin-bottom: 18px; }
+      .artwork { position: relative; display: grid; place-items: center; width: 76px; height: 76px; overflow: hidden; border: 1px solid color-mix(in srgb, ${CONFIG.palette.text} 14%, transparent); border-radius: 15px; background: linear-gradient(135deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue} 58%, ${CONFIG.palette.teal}); box-shadow: 0 8px 20px color-mix(in srgb, ${CONFIG.palette.mauve} 22%, transparent); }
+      .artwork::before, .artwork::after { content: ''; position: absolute; border: 1px solid rgb(255 255 255 / 25%); border-radius: 50%; }
+      .artwork::before { width: 54px; height: 54px; }
+      .artwork::after { width: 36px; height: 36px; }
+      .artwork i { z-index: 1; color: white; font-size: 25px; text-shadow: 0 2px 8px rgb(0 0 0 / 25%); }
+      .track-info { min-width: 0; }
+      .track { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${CONFIG.palette.text}; font: 900 19px/1.2 'Nunito', sans-serif; letter-spacing: -.035em; margin-bottom: 6px; }
+      .source { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${CONFIG.palette.subtext1}; font-size: 12px; font-weight: 700; }
+      .controls { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 12px; }
+      .player button { border: 1px solid ${CONFIG.palette.surface1}; border-radius: 10px; padding: 8px; background: color-mix(in srgb, ${CONFIG.palette.surface0} 82%, transparent); color: ${CONFIG.palette.text}; cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+      .player button:hover:not(:disabled) { transform: translateY(-1px); border-color: ${CONFIG.palette.mauve}; background: ${CONFIG.palette.surface1}; }
+      .player button:disabled { opacity: .42; cursor: not-allowed; }
+      .player button.play { width: 42px; height: 42px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 14px; background: linear-gradient(135deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); color: ${CONFIG.palette.crust}; box-shadow: 0 5px 16px color-mix(in srgb, ${CONFIG.palette.mauve} 30%, transparent); }
+      .player button.play i { font-size: 23px; }
+      .player input[type="range"] { width: 100%; height: 5px; margin: 0; border-radius: 99px; accent-color: ${CONFIG.palette.mauve}; cursor: pointer; }
+      .time { display: flex; justify-content: space-between; color: ${CONFIG.palette.subtext0}; font: 700 10px 'Roboto', sans-serif; font-variant-numeric: tabular-nums; margin: 7px 0 0 54px; }
+      .volume, .file-row { display: flex; align-items: center; gap: 10px; margin-top: 17px; }
+      .volume { padding-top: 14px; border-top: 1px solid color-mix(in srgb, ${CONFIG.palette.surface1} 75%, transparent); }
+      .volume i { color: ${CONFIG.palette.subtext1}; font-size: 18px; }
+      .volume input { flex: 1; }
+      .file-row { flex-wrap: wrap; margin-top: 15px; }
       .file-row label { display: inline-block; cursor: pointer; }
+      .file-row button { padding: 8px 11px; font-size: 11px; font-weight: 800; }
+      .file-row button.primary { border: 0; background: linear-gradient(110deg, ${CONFIG.palette.mauve}, ${CONFIG.palette.blue}); color: ${CONFIG.palette.crust}; }
       .file-row input[type="file"] { display: none; }
-      .hint { margin-top: 10px; color: ${CONFIG.palette.subtext0}; font-size: 11px; line-height: 1.4; }
+      .hint { margin: 13px 0 0; color: ${CONFIG.palette.subtext0}; font-size: 10px; line-height: 1.5; }
       audio { display: none; }
+      @media (max-width: 420px) { .player { padding: 16px; } .now-playing { grid-template-columns: 64px minmax(0, 1fr); gap: 11px; } .artwork { width: 64px; height: 64px; } .track { font-size: 17px; } }
     `;
   }
 
@@ -39,13 +62,16 @@ class MusicControl extends Component {
     return `<button class="music-button" type="button" aria-expanded="false" title="Open this page's music player"><i class="material-icons">music_note</i><span>Music</span></button>
       <dialog class="player-dialog" aria-label="Music player">
        <section class="player">
-        <div class="player-heading"><div class="track">Looking for music in other tabs…</div><button class="close-player" type="button" aria-label="Close music player"><i class="material-icons">close</i></button></div>
-        <div class="source">Media control extension not connected</div>
+        <div class="player-heading"><span class="eyebrow">now playing</span><button class="close-player" type="button" aria-label="Close music player"><i class="material-icons">close</i></button></div>
+        <div class="now-playing">
+          <div class="artwork" aria-hidden="true"><i class="material-icons">music_note</i></div>
+          <div class="track-info"><div class="track">Looking for music in other tabs…</div><div class="source">Media control extension not connected</div></div>
+        </div>
         <audio preload="metadata"></audio>
         <div class="controls"><button class="play" type="button" aria-label="Play" disabled><i class="material-icons">play_arrow</i></button><input class="seek" type="range" min="0" max="1000" value="0" aria-label="Track position" disabled></div>
         <div class="time"><span class="elapsed">0:00</span><span class="duration">0:00</span></div>
         <div class="volume"><i class="material-icons">volume_down</i><input class="volume-range" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="Volume"></div>
-        <div class="file-row"><label><button type="button">Choose audio</button><input class="file" type="file" accept="audio/*"></label><button class="clear" type="button" disabled>Clear</button></div>
+        <div class="file-row"><label><button class="primary" type="button">Choose audio</button><input class="file" type="file" accept="audio/*"></label><button class="clear" type="button" disabled>Clear audio</button></div>
         <p class="hint">Connect the optional browser extension to control media in other tabs, or choose an audio file to play here.</p>
        </section>
       </dialog>`;
