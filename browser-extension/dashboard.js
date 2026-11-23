@@ -176,3 +176,10 @@ $("#enable-notifications").addEventListener("click", async () => {
     setStatus(error.message || "could not request notification permission.");
   }
 });
+
+
+$("#pause-focus").addEventListener("click", async () => {
+  const result = await send("focus-pause");
+  setStatus(result?.ok ? "focus mode paused for 15 minutes." : result?.error || "could not pause focus mode.");
+  loadFocus();
+});
