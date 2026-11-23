@@ -30,7 +30,7 @@
     button.type = "button";
     button.textContent = "close this page";
     button.style.cssText = "padding:10px 16px;border:0;border-radius:9px;background:#cba6f7;color:#1e1e2e;font-weight:700;cursor:pointer;";
-    button.addEventListener("click", () => window.close());
+    button.addEventListener("click", () => chrome.runtime.sendMessage({ type: "browser-tools-focus-close-tab" }));
     card.append(title, description, button);
     overlay.append(card);
     document.documentElement.append(overlay);
