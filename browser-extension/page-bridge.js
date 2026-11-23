@@ -1,6 +1,6 @@
 // Bridges only this startpage's own UI to the extension service worker.
 (() => {
-  const allowed = location.hostname === "person87-93.github.io" || location.hostname === "localhost";
+  const allowed = (location.hostname === "person87-93.github.io" && location.pathname.startsWith("/catppuccin-startpage")) || (location.hostname === "localhost" && location.port === "8000");
   if (!allowed) return;
 
   window.addEventListener("message", (event) => {
