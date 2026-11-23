@@ -41,6 +41,18 @@ Right-click a page, link, or selected text to open the **Startpage tools** subme
 
 The browser dashboard reports open and duplicate tab counts, saved workspaces, tab groups, focus state, extension version, extension storage size, and available load timings for the active page. Chrome does not expose every internal browser performance metric, so unavailable measurements are shown as such. Recent extension errors are kept locally when diagnostic history is enabled.
 
-## Update center status
+## Update center
 
-The update-center interface and topic preferences are present, but automatic collection is not active yet. The approved Google-only ChatGPT-to-Apps-Script callback still needs a supported automatic handoff. Until that is verified, the extension does not claim that updates are being delivered and does not substitute another external service. Email digests remain disabled; browser notifications can be enabled separately after granting the optional permission.
+The update center uses your own Google Apps Script project as its collector and a Google spreadsheet as its source/update registry. It does not depend on ChatGPT or a third-party feed aggregation service.
+
+1. Follow the setup guide in [google-apps-script/README.md](../google-apps-script/README.md).
+2. Run `setupUpdateCenter()` in Apps Script and authorize it.
+3. Deploy the project as a web app that executes as you and is accessible to anyone. The API key is required for every request.
+4. Copy the deployed `/exec` URL and generated API key into **Settings → Updates**, or enter them in the browser dashboard.
+5. Use **collect now** to test the first collection.
+
+The starter source list includes Xbox Wire, Chrome Releases, Chrome for Developers, Fortnite News, REC Foundation News, and the VEX community forum. RSS/Atom sources are preferred. HTML page sources use a path prefix and may need adjustment if a publisher changes its page structure. The VEX forum is a community source, not an official rules authority.
+
+The collector stores article metadata and original links, deduplicates URLs, and keeps the newest 500 items. Its default schedule is every six hours; choose six hours, twelve hours, daily, or weekly in **Settings → Updates**. You can add, disable, and remove sources in the browser dashboard. Category preferences filter what the extension displays.
+
+Browser notifications are optional and require the extension's notification permission. Email digests are not implemented yet. The Apps Script project must be created and deployed from your own Google account; the repository cannot authorize or deploy it on your behalf.
