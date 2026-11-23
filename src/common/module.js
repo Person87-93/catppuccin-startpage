@@ -10,6 +10,7 @@ const components = {
   "online-status": OnlineStatus,
   "music-control": MusicControl,
   "appearance-settings": AppearanceSettings,
+  "productivity-tools": ProductivityTools,
   "tabs-list": Tabs,
   "shortcut-tools": ShortcutTools,
 };
