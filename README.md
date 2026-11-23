@@ -58,6 +58,7 @@ A minimalistic and customisable startpage that uses the [**Catppuccin palettes**
 - Browser battery and online status indicators, where supported
 - A local audio player and browser-local appearance settings
 - Optional browser-wide website colour, typography, spacing, and per-site element hiding through the companion Chromium extension
+- Browser workspaces, scheduled focus mode, browser-wide command palette, contextual productivity actions, and browser diagnostics through the companion extension
 - Local fonts mode for privacy and offline use (no Google Fonts CDN)
 - Browser-local notes and to-do list with automatic saving
 - Portable JSON backups for configuration, appearance, quick links, notes, and tasks
