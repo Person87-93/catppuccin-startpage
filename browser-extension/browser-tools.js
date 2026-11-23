@@ -193,9 +193,11 @@ function isScheduleActive(schedule, date = new Date()) {
 
 async function evaluateFocus() {
   const settings = await readFocusSettings();
-  const active = settings.enabled || isScheduleActive(settings.schedule);
+  const storedOverride = await chrome.storage.local.get("focusOverrideUntil");
+  const overrideActive = Number(storedOverride.focusOverrideUntil) > Date.now();
+  const active = !overrideActive && (settings.enabled || isScheduleActive(settings.schedule));
   const previous = await chrome.storage.local.get("focusRuntime");
-  const runtime = { active, checkedAt: new Date().toISOString(), reason: settings.enabled ? "manual" : active ? "schedule" : "inactive" };
+  const runtime = { active, checkedAt: new Date().toISOString(), reason: overrideActive ? "temporary-override" : settings.enabled ? "manual" : active ? "schedule" : "inactive" };
   await chrome.storage.local.set({ focusRuntime: runtime });
   if (previous.focusRuntime?.active !== active) {
     await chrome.tabs.query({}).then((tabs) => tabs.forEach((tab) => {
@@ -407,6 +409,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case "browser-tools-focus-toggle": {
         const settings = await readFocusSettings();
         return { ok: true, settings: await writeFocusSettings({ ...settings, enabled: !settings.enabled }) };
+      }
+      case "browser-tools-focus-pause": {
+        await chrome.storage.local.set({ focusOverrideUntil: Date.now() + 15 * 60 * 1000 });
+        const state = await evaluateFocus();
+        return { ok: true, runtime: state.runtime };
       }
       case "browser-tools-diagnostics":
         return { ok: true, diagnostics: await getDiagnostics() };
