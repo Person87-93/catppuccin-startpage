@@ -416,7 +416,7 @@ class AppearanceSettings extends Component {
     const publishBrowserFeatureSettings = () => {
       const focus = {
         enabled: false,
-        sites: this.shadow.querySelector("#focus-sites").value.split("\\n").map((site) => site.trim()).filter(Boolean),
+        sites: this.shadow.querySelector("#focus-sites").value.split("\n").map((site) => site.trim()).filter(Boolean),
         schedule: {
           enabled: this.shadow.querySelector("#focus-schedule-enabled").checked,
           start: this.shadow.querySelector("#focus-start").value || "09:00",
@@ -459,7 +459,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelector("#focus-schedule-enabled").checked = browserFeatures.focus.schedule.enabled === true;
     this.shadow.querySelector("#focus-start").value = browserFeatures.focus.schedule.start || "09:00";
     this.shadow.querySelector("#focus-end").value = browserFeatures.focus.schedule.end || "17:00";
-    this.shadow.querySelector("#focus-sites").value = (browserFeatures.focus.sites || []).join("\\n");
+    this.shadow.querySelector("#focus-sites").value = (browserFeatures.focus.sites || []).join("\n");
     this.shadow.querySelectorAll(".focus-days input").forEach((input) => {
       input.checked = (browserFeatures.focus.schedule.days || []).includes(Number(input.value));
     });
