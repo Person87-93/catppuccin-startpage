@@ -46,9 +46,8 @@ function setupUpdateCenter() {
     props.setProperty(UPDATE_API_KEY, apiKey);
   }
 
-  ScriptApp.getProjectTriggers().filter(trigger => trigger.getHandlerFunction() === "collectUpdates")
-    .forEach(trigger => ScriptApp.deleteTrigger(trigger));
-  ScriptApp.newTrigger("collectUpdates").timeBased().everyHours(6).create();
+  if (!props.getProperty("UPDATE_CENTER_FREQUENCY")) props.setProperty("UPDATE_CENTER_FREQUENCY", "6h");
+  configureCollectionTrigger_();
 
   const result = collectUpdates();
   const setupInfo = {
@@ -82,6 +81,15 @@ function doPost(event) {
       const result = collectUpdates();
       return json_({ ok: true, added: result.added || 0, lastRun: getLastRun_(), ...getFeed_() });
     }
+    if (action === "set-frequency") {
+      const frequency = ["6h", "12h", "daily", "weekly"].includes(body.frequency) ? body.frequency : "6h";
+      const props = PropertiesService.getScriptProperties();
+      if (props.getProperty("UPDATE_CENTER_FREQUENCY") !== frequency) {
+        props.setProperty("UPDATE_CENTER_FREQUENCY", frequency);
+        configureCollectionTrigger_();
+      }
+      return json_({ ok: true, frequency });
+    }
     if (action === "source-add") return json_(addSource_(body.source || {}));
     if (action === "source-toggle") return json_(toggleSource_(body.id, body.enabled === true));
     if (action === "source-remove") return json_(removeSource_(body.id));
@@ -89,6 +97,17 @@ function doPost(event) {
   } catch (error) {
     return json_({ ok: false, error: safeError_(error) });
   }
+}
+
+function configureCollectionTrigger_() {
+  const frequency = PropertiesService.getScriptProperties().getProperty("UPDATE_CENTER_FREQUENCY") || "6h";
+  ScriptApp.getProjectTriggers().filter(trigger => trigger.getHandlerFunction() === "collectUpdates")
+    .forEach(trigger => ScriptApp.deleteTrigger(trigger));
+  const builder = ScriptApp.newTrigger("collectUpdates").timeBased();
+  if (frequency === "12h") builder.everyHours(12).create();
+  else if (frequency === "daily") builder.everyDays(1).atHour(6).create();
+  else if (frequency === "weekly") builder.everyWeeks(1).onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(6).create();
+  else builder.everyHours(6).create();
 }
 
 function collectUpdates() {
@@ -114,7 +133,9 @@ function collectUpdates() {
       let errorText = "";
       try {
         const entries = source.type === "html" ? fetchHtmlEntries_(source) : fetchRssEntries_(source);
+        const keywords = String(source.keywords || "").split(",").map(value => value.trim().toLowerCase()).filter(Boolean);
         entries.forEach(entry => {
+          if (keywords.length && !keywords.some(keyword => (entry.title + " " + entry.summary).toLowerCase().includes(keyword))) return;
           const canonicalUrl = normalizeUrl_(entry.url);
           if (!canonicalUrl) return;
           const id = digest_(source.id + "|" + canonicalUrl);
@@ -246,7 +267,7 @@ function getFeed_() {
     summary: String(row[6] || ""), publishedAt: String(row[7] || ""),
     discoveredAt: String(row[8] || "")
   }));
-  return { ok: true, updates, sources: readSources_(), lastRun: getLastRun_() };
+  return { ok: true, updates, sources: readSources_(), lastRun: getLastRun_(), frequency: PropertiesService.getScriptProperties().getProperty("UPDATE_CENTER_FREQUENCY") || "6h" };
 }
 
 function readSources_() {
