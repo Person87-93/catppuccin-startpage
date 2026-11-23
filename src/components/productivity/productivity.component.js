@@ -189,6 +189,8 @@ class ProductivityTools extends Component {
   createBackup() {
     const config = {};
     Object.keys(CONFIG.defaults).forEach((key) => { config[key] = CONFIG[key]; });
+    // Never include a weather API key in a portable backup.
+    if (config.temperature) config.temperature = { ...config.temperature, appId: "" };
     let appearance = null;
     try { appearance = JSON.parse(localStorage.getItem("startpageAppearance") || "null"); } catch {}
     return {
@@ -210,7 +212,7 @@ class ProductivityTools extends Component {
       anchor.href = url;
       anchor.download = `catppuccin-startpage-backup-${new Date().toISOString().slice(0, 10)}.json`;
       anchor.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       this.setStatus("Backup exported.");
     } catch {
       this.setStatus("Could not create the backup.");
