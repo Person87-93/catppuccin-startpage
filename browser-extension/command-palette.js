@@ -32,7 +32,6 @@ async function loadCommands() {
       title: `Switch to tab: ${tab.title || tab.url}`,
       detail: tab.url,
       run: async () => {
-        await chrome.windows.update(tab.windowId, { focused: true });
         await chrome.tabs.update(tab.id, { active: true });
       },
     })),
@@ -90,7 +89,7 @@ search.addEventListener("input", () => { selected = 0; render(); });
 search.addEventListener("keydown", (event) => {
   const query = search.value.trim().toLowerCase();
   const filtered = commands.filter((item) => `${item.title} ${item.detail}`.toLowerCase().includes(query));
-  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+  if ((event.key === "ArrowDown" || event.key === "ArrowUp") && filtered.length) {
     event.preventDefault();
     selected = (selected + (event.key === "ArrowDown" ? 1 : -1) + filtered.length) % filtered.length;
     render();
