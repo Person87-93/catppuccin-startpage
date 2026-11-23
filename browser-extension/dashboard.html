@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Startpage browser dashboard</title>
+  <link rel="stylesheet" href="tools.css">
+</head>
+<body>
+  <header class="dashboard-header">
+    <div><div class="eyebrow">CATPPUCCIN / BROWSER TOOLS</div><h1>browser workspace</h1><p>keep your tabs, focus sessions, and browser status in one place.</p></div>
+    <a class="subtle-link" href="command-palette.html">open command palette</a>
+  </header>
+  <main class="dashboard-grid">
+    <section class="tool-card workspace-card">
+      <div class="card-heading"><div><span class="eyebrow">01 / ORGANIZE</span><h2>workspaces</h2></div><span class="pill" id="workspace-count">0 saved</span></div>
+      <form id="workspace-form" class="inline-form"><input id="workspace-name" maxlength="48" required placeholder="new workspace name"><button class="primary">save current tabs</button></form>
+      <p class="hint">restoring opens missing tabs and leaves your existing tabs untouched.</p>
+      <div id="workspace-list" class="item-list"></div>
+    </section>
+    <section class="tool-card focus-card">
+      <div class="card-heading"><div><span class="eyebrow">02 / STAY ON TRACK</span><h2>focus mode</h2></div><span class="pill" id="focus-status">off</span></div>
+      <label class="switch-row"><span><strong>Enable focus mode</strong><small>manually activate your blocked-site list</small></span><input id="focus-enabled" type="checkbox"></label>
+      <label class="field-label" for="focus-sites">websites to pause</label>
+      <textarea id="focus-sites" rows="4" placeholder="example.com&#10;social.example"></textarea>
+      <div class="schedule-grid">
+        <label class="switch-row"><span><strong>Schedule</strong><small>repeat on selected days</small></span><input id="schedule-enabled" type="checkbox"></label>
+        <label>start <input id="schedule-start" type="time" value="09:00"></label>
+        <label>end <input id="schedule-end" type="time" value="17:00"></label>
+      </div>
+      <div id="day-picker" class="day-picker">
+        <label><input type="checkbox" value="1"> mon</label><label><input type="checkbox" value="2"> tue</label><label><input type="checkbox" value="3"> wed</label><label><input type="checkbox" value="4"> thu</label><label><input type="checkbox" value="5"> fri</label><label><input type="checkbox" value="6"> sat</label><label><input type="checkbox" value="0"> sun</label>
+      </div>
+      <button id="save-focus" class="primary">save focus settings</button>
+      <p class="hint">the focus screen is a reminder overlay, not a security restriction.</p>
+    </section>
+    <section class="tool-card diagnostics-card" id="diagnostics">
+      <div class="card-heading"><div><span class="eyebrow">03 / SYSTEM STATUS</span><h2>diagnostics</h2></div><button id="refresh-diagnostics" class="quiet">refresh</button></div>
+      <div id="diagnostics-grid" class="metrics-grid"></div>
+      <div id="diagnostic-errors" class="diagnostic-errors"></div>
+    </section>
+    <section class="tool-card update-card">
+      <div class="card-heading"><div><span class="eyebrow">04 / WHAT'S NEW</span><h2>update center</h2></div><span class="pill">setup pending</span></div>
+      <p>the google-only update feed is reserved for the approved chatgpt-to-apps-script callback workflow. that automatic handoff has not been verified, so this panel will not claim to sync updates yet.</p>
+      <p class="hint">no third-party services or APIs have been added.</p>
+    </section>
+  </main>
+  <p id="dashboard-status" class="status" role="status" aria-live="polite"></p>
+  <script src="dashboard.js"></script>
+</body>
+</html>
