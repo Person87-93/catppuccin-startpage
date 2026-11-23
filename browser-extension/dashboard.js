@@ -98,6 +98,7 @@ async function loadDiagnostics() {
   const metrics = [
     ["extension", data.extensionVersion],
     ["open tabs", data.totalTabs],
+    ["duplicate tabs", data.duplicateTabCount],
     ["website tabs", data.regularTabs],
     ["saved workspaces", data.workspaceCount],
     ["saved workspace tabs", data.workspaceTabCount],
@@ -105,7 +106,7 @@ async function loadDiagnostics() {
     ["tab groups", data.tabGroupCount],
     ["focus mode", data.focusActive ? "active" : "off"],
     ["focus websites", data.focusSiteCount],
-    ["local storage", `${(data.localStorageBytes / 1024).toFixed(1)} KB`],
+    ["extension storage", `${(data.localStorageBytes / 1024).toFixed(1)} KB`],
     ["active page load", data.pagePerformance?.loadCompleteMs ? `${data.pagePerformance.loadCompleteMs} ms` : "unavailable"],
     ["active page load", data.pagePerformance?.loadCompleteMs ? `${data.pagePerformance.loadCompleteMs} ms` : "unavailable"],
   ];
