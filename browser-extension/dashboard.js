@@ -171,16 +171,3 @@ $("#enable-notifications").addEventListener("click", async () => {
     setStatus(error.message || "could not request notification permission.");
   }
 });
-
-
-$("#enable-notifications").addEventListener("click", async () => {
-  try {
-    const granted = await chrome.permissions.request({ permissions: ["notifications"] });
-    if (!granted) return setStatus("notification permission was not granted.");
-    const current = await send("settings-get");
-    await send("settings-set", { settings: { ...(current.settings || {}), browserNotifications: true } });
-    setStatus("browser notifications are enabled.");
-  } catch (error) {
-    setStatus(error.message || "could not request notification permission.");
-  }
-});
