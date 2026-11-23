@@ -18,6 +18,8 @@ const featureDefaults = {
   paletteShortcut: "Ctrl+Shift+K",
   updateTopics: ["vex", "xbox", "fortnite", "browser"],
   updateFrequency: "daily",
+  updateApiUrl: "",
+  updateApiKey: "",
   browserNotifications: false,
   emailDigests: false,
   contextMenuEnabled: true,
