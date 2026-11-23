@@ -35,6 +35,13 @@ async function loadWorkspaces() {
       const result = await send("workspace-restore", { id: workspace.id });
       setStatus(result?.ok ? `opened ${result.opened} missing tabs; existing tabs were left alone.` : result?.error || "could not restore workspace");
     });
+    const duplicate = document.createElement("button");
+    duplicate.textContent = "duplicate";
+    duplicate.addEventListener("click", async () => {
+      const result = await send("workspace-duplicate", { id: workspace.id });
+      setStatus(result?.ok ? `created "${result.workspace.name}".` : result?.error || "could not duplicate workspace");
+      loadWorkspaces();
+    });
     const rename = document.createElement("button");
     rename.textContent = "rename";
     rename.addEventListener("click", async () => {
@@ -53,7 +60,7 @@ async function loadWorkspaces() {
       setStatus("workspace deleted.");
       loadWorkspaces();
     });
-    actions.append(restore, rename, remove);
+    actions.append(restore, duplicate, rename, remove);
     row.append(info, actions);
     list.append(row);
   });
