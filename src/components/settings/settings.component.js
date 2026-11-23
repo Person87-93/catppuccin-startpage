@@ -442,6 +442,7 @@ class AppearanceSettings extends Component {
       window.postMessage({ type: "browser-tools-settings-set", requestId, settings: {
         saveBeforeRestore: this.browserFeatureSettings.saveBeforeRestore,
         diagnosticsHistory: this.browserFeatureSettings.diagnosticsHistory,
+        browserNotifications: this.browserFeatureSettings.notifications.browser,
       } }, location.origin);
       window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-${Date.now()}`, settings: focus }, location.origin);
     };
@@ -482,6 +483,7 @@ class AppearanceSettings extends Component {
     window.postMessage({ type: "browser-tools-settings-set", requestId: `features-init-${Date.now()}`, settings: {
       saveBeforeRestore: browserFeatures.saveBeforeRestore,
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
+      browserNotifications: browserFeatures.notifications.browser,
     } }, location.origin);
     window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-init-${Date.now()}`, settings: browserFeatures.focus }, location.origin);
     const settingIds = { "panel-width": "panelWidth", "text-scale": "textScale" };
