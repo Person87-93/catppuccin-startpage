@@ -40,9 +40,32 @@
       <div id="diagnostic-errors" class="diagnostic-errors"></div><button id="enable-notifications" class="quiet">enable browser notifications</button>
     </section>
     <section class="tool-card update-card">
-      <div class="card-heading"><div><span class="eyebrow">04 / WHAT'S NEW</span><h2>update center</h2></div><span class="pill">setup pending</span></div>
-      <p>the google-only update feed is reserved for the approved chatgpt-to-apps-script callback workflow. that automatic handoff has not been verified, so this panel will not claim to sync updates yet.</p>
-      <p class="hint">no third-party services or APIs have been added.</p>
+      <div class="card-heading"><div><span class="eyebrow">04 / WHAT'S NEW</span><h2>update center</h2></div><span class="pill" id="update-status">not connected</span></div>
+      <div class="update-connection">
+        <label class="field-label" for="update-api-url">Google Apps Script web app URL</label>
+        <input id="update-api-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="url">
+        <label class="field-label" for="update-api-key">API key</label>
+        <input id="update-api-key" type="password" placeholder="paste the key from the Apps Script setup log" autocomplete="off">
+        <div class="row-actions"><button id="save-update-connection" class="primary">save connection</button><button id="collect-updates-now" class="quiet">collect now</button></div>
+        <p class="hint" id="update-connection-help">Deploy your own Google Apps Script backend, then paste its /exec URL and generated key here. Credentials are stored in extension-local storage.</p>
+      </div>
+      <div class="update-sources">
+        <div class="card-heading"><div><span class="eyebrow">SOURCES</span><h3>what to monitor</h3></div><span class="pill" id="source-count">0 sources</span></div>
+        <form id="source-form" class="source-form">
+          <input id="source-name" required maxlength="80" placeholder="source name">
+          <select id="source-category" aria-label="Source category"><option value="vex">VEX / robotics</option><option value="xbox">Xbox</option><option value="fortnite">Fortnite</option><option value="browser">Browser</option></select>
+          <select id="source-type" aria-label="Source type"><option value="rss">RSS / Atom</option><option value="html">HTML page</option></select>
+          <input id="source-url" type="url" required placeholder="https://example.com/feed.xml">
+          <input id="source-prefix" placeholder="HTML path prefix, e.g. /news/">
+          <button class="primary">add source</button>
+        </form>
+        <p class="hint">RSS sources are preferred. HTML sources need a path prefix that matches article links. Add only public HTTPS sources.</p>
+        <div id="source-list" class="item-list"></div>
+      </div>
+      <div class="update-feed">
+        <div class="card-heading"><div><span class="eyebrow">LATEST</span><h3>recent updates</h3></div><span class="hint" id="update-last-run">not synced yet</span></div>
+        <div id="update-list" class="item-list"><p class="empty">connect your Apps Script backend to load updates.</p></div>
+      </div>
     </section>
   </main>
   <p id="dashboard-status" class="status" role="status" aria-live="polite"></p>
