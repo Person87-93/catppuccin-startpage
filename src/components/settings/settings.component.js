@@ -455,6 +455,23 @@ class AppearanceSettings extends Component {
       window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-${Date.now()}`, settings: focus }, location.origin);
     };
 
+    const workspaceRequestId = `workspace-options-${Date.now()}`;
+    window.addEventListener("message", (event) => {
+      if (event.source !== window || event.origin !== location.origin) return;
+      const message = event.data;
+      if (message?.type !== "browser-tools-response" || message.requestId !== workspaceRequestId) return;
+      const response = message.response;
+      const select = this.shadow.querySelector("#workspace-default");
+      const selected = this.browserFeatureSettings.defaultWorkspaceId || response?.defaultWorkspaceId || "";
+      select.replaceChildren(new Option("None selected", ""));
+      (response?.workspaces || []).forEach((workspace) => {
+        const option = new Option(workspace.name, workspace.id);
+        select.append(option);
+      });
+      select.value = selected;
+    });
+    window.postMessage({ type: "browser-tools-workspaces-get", requestId: workspaceRequestId }, location.origin);
+
     const settings = this.getSettings();
     const browserFeatures = settings.browserFeatures;
     this.browserFeatureSettings = browserFeatures;
