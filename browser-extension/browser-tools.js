@@ -228,6 +228,7 @@ async function getDiagnostics() {
     regularTabs: tabs.filter((tab) => /^https?:/i.test(tab.url || "")).length,
     workspaceCount: workspaces.length,
     workspaceTabCount: workspaces.reduce((sum, item) => sum + (item.tabs?.length || 0), 0),
+    duplicateTabCount: tabs.length - new Set(tabs.map((tab) => tab.url).filter(Boolean)).size,
     tabGroupCount,
     pagePerformance,
     focusActive: focus.runtime.active,
