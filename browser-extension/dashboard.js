@@ -183,3 +183,161 @@ $("#pause-focus").addEventListener("click", async () => {
   setStatus(result?.ok ? "focus mode paused for 15 minutes." : result?.error || "could not pause focus mode.");
   loadFocus();
 });
+
+
+const sendUpdate = (type, extra = {}) => chrome.runtime.sendMessage({ type: \`browser-updates-\${type}\`, ...extra });
+
+function renderSources(sources) {
+  const list = $("#source-list");
+  list.replaceChildren();
+  $("#source-count").textContent = \`\${sources.length} sources\`;
+  if (!sources.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "no sources configured yet";
+    list.append(empty);
+    return;
+  }
+  sources.forEach(source => {
+    const row = document.createElement("article");
+    row.className = "workspace-row source-row";
+    const info = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = source.name;
+    const detail = document.createElement("small");
+    detail.textContent = \`\${source.category} · \${source.type.toUpperCase()}\${source.lastError ? " · " + source.lastError : ""}\`;
+    info.append(title, detail);
+    const actions = document.createElement("div");
+    actions.className = "row-actions";
+    const toggle = document.createElement("button");
+    toggle.textContent = source.enabled ? "enabled" : "disabled";
+    toggle.className = source.enabled ? "quiet" : "";
+    toggle.addEventListener("click", async () => {
+      const result = await sendUpdate("source-toggle", { id: source.id, enabled: !source.enabled });
+      if (!result?.ok) return setStatus(result?.error || "could not update source");
+      renderSources(result.sources || []);
+    });
+    const remove = document.createElement("button");
+    remove.className = "danger";
+    remove.textContent = "remove";
+    remove.addEventListener("click", async () => {
+      if (!window.confirm(\`Remove "\${source.name}" from the update sources?\`)) return;
+      const result = await sendUpdate("source-remove", { id: source.id });
+      if (!result?.ok) return setStatus(result?.error || "could not remove source");
+      renderSources(result.sources || []);
+    });
+    actions.append(toggle, remove);
+    row.append(info, actions);
+    list.append(row);
+  });
+}
+
+function renderUpdates(updates) {
+  const list = $("#update-list");
+  list.replaceChildren();
+  if (!updates.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "no matching updates yet. try collecting now or enabling another source.";
+    list.append(empty);
+    return;
+  }
+  updates.slice(0, 60).forEach(item => {
+    const row = document.createElement("article");
+    row.className = "update-entry";
+    const meta = document.createElement("small");
+    meta.textContent = \`\${item.category} · \${item.source}\`;
+    const link = document.createElement("a");
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = item.title;
+    const summary = document.createElement("p");
+    summary.textContent = item.summary || "open the original source for details.";
+    const date = document.createElement("small");
+    const timestamp = item.publishedAt || item.discoveredAt;
+    date.textContent = timestamp ? new Date(timestamp).toLocaleString() : "date not provided by source";
+    row.append(meta, link, summary, date);
+    list.append(row);
+  });
+}
+
+async function loadUpdateCenter() {
+  const settings = await send("settings-get");
+  if (!settings?.ok) throw new Error(settings?.error || "could not load update settings");
+  $("#update-api-url").value = settings.settings.updateApiUrl || "";
+  $("#update-api-key").value = settings.settings.updateApiKey || "";
+  if (!$("#update-api-url").value || !$("#update-api-key").value) {
+    $("#update-status").textContent = "not connected";
+    $("#update-connection-help").textContent = "Paste your deployed Apps Script /exec URL and API key, then save the connection.";
+    return;
+  }
+  await loadUpdates();
+}
+
+async function loadUpdates() {
+  $("#update-status").textContent = "connecting";
+  const result = await sendUpdate("feed-get");
+  if (!result?.ok) {
+    $("#update-status").textContent = "connection issue";
+    $("#update-connection-help").textContent = result?.error || "Could not reach the Apps Script endpoint.";
+    setStatus(result?.error || "could not load updates");
+    return;
+  }
+  $("#update-status").textContent = "connected";
+  $("#update-connection-help").textContent = "Connected to your Google Apps Script collector. It runs on its own six-hour schedule.";
+  $("#update-last-run").textContent = result.lastRun ? \`last collection: \${new Date(result.lastRun).toLocaleString()}\` : "waiting for first collection";
+  renderSources(result.sources || []);
+  renderUpdates(result.updates || []);
+}
+
+$("#save-update-connection").addEventListener("click", async () => {
+  const current = await send("settings-get");
+  const settings = {
+    ...(current.settings || {}),
+    updateApiUrl: $("#update-api-url").value.trim(),
+    updateApiKey: $("#update-api-key").value.trim(),
+  };
+  const saved = await send("settings-set", { settings });
+  if (!saved?.ok) return setStatus(saved?.error || "could not save update connection");
+  setStatus("update connection saved.");
+  await loadUpdates();
+});
+
+$("#collect-updates-now").addEventListener("click", async () => {
+  $("#update-status").textContent = "collecting";
+  const result = await sendUpdate("collect-now");
+  if (!result?.ok) {
+    $("#update-status").textContent = "connection issue";
+    return setStatus(result?.error || "collection failed");
+  }
+  setStatus("collection completed.");
+  await loadUpdates();
+});
+
+$("#source-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const source = {
+    name: $("#source-name").value.trim(),
+    category: $("#source-category").value,
+    type: $("#source-type").value,
+    url: $("#source-url").value.trim(),
+    pathPrefix: $("#source-prefix").value.trim(),
+  };
+  const result = await sendUpdate("source-add", { source });
+  if (!result?.ok) return setStatus(result?.error || "could not add source");
+  $("#source-name").value = "";
+  $("#source-url").value = "";
+  $("#source-prefix").value = "";
+  renderSources(result.sources || []);
+  setStatus("source added.");
+});
+
+$("#source-type").addEventListener("change", () => {
+  $("#source-prefix").placeholder = $("#source-type").value === "html" ? "required HTML path prefix, e.g. /news/" : "optional for RSS";
+});
+
+loadUpdateCenter().catch(error => {
+  $("#update-status").textContent = "not connected";
+  setStatus(error.message || "update center could not load");
+});
