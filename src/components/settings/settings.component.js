@@ -462,7 +462,8 @@ class AppearanceSettings extends Component {
         diagnosticsHistory: this.shadow.querySelector("#diagnostics-history").checked,
       };
       const saved = JSON.parse(localStorage.getItem(AppearanceSettings.storageKey) || "{}");
-      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ ...saved, browserFeatures: this.browserFeatureSettings }));
+      const localBrowserFeatures = { ...this.browserFeatureSettings, updates: { ...this.browserFeatureSettings.updates, apiKey: "" } };
+      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ ...saved, browserFeatures: localBrowserFeatures }));
       const requestId = `features-${Date.now()}`;
       window.postMessage({ type: "browser-tools-settings-set", requestId, settings: {
         saveBeforeRestore: this.browserFeatureSettings.saveBeforeRestore,
@@ -537,7 +538,6 @@ class AppearanceSettings extends Component {
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
       browserNotifications: browserFeatures.notifications.browser,
       updateApiUrl: browserFeatures.updates.apiUrl || "",
-      updateApiKey: "",
       updateTopics: browserFeatures.updates.topics || ["vex", "xbox", "fortnite", "browser"],
     } }, location.origin);
     window.postMessage({ type: "browser-tools-settings-get", requestId: updateConfigRequestId }, location.origin);
