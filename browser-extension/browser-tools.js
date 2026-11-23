@@ -127,8 +127,14 @@ async function deleteWorkspace(id) {
   const workspaces = await readWorkspaces();
   const next = workspaces.filter((item) => item.id !== id);
   await writeWorkspaces(next);
-  const stored = await chrome.storage.local.get("activeWorkspaceId");
-  if (stored.activeWorkspaceId === id) await chrome.storage.local.remove("activeWorkspaceId");
+  const [active, preferences] = await Promise.all([
+    chrome.storage.local.get("activeWorkspaceId"),
+    chrome.storage.local.get(FEATURE_SETTINGS_KEY),
+  ]);
+  if (active.activeWorkspaceId === id) await chrome.storage.local.remove("activeWorkspaceId");
+  if (preferences[FEATURE_SETTINGS_KEY]?.defaultWorkspaceId === id) {
+    await chrome.storage.local.set({ [FEATURE_SETTINGS_KEY]: { ...featureDefaults, ...(preferences[FEATURE_SETTINGS_KEY] || {}), defaultWorkspaceId: "" } });
+  }
   return { ok: true };
 }
 
@@ -324,7 +330,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes[FOCUS_KEY]) evaluateFocus().catch(recordDiagnosticError);
-  if (area === "local" && changes[WORKSPACE_KEY]) refreshWorkspaceMenus().catch(recordDiagnosticError);
+  // Workspace menu refreshes are handled by writeWorkspaces to avoid duplicate remove/create races.
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -415,8 +421,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         await refreshWorkspaceMenus();
         return { ok: true, settings };
       }
-      case "browser-tools-notification-permission":
-        return { ok: false, error: "Enable notifications from the extension dashboard after granting browser permission." };
+      case "browser-tools-focus-close-tab":
+        if (sender.tab?.id) await chrome.tabs.remove(sender.tab.id);
+        return { ok: true };
       case "browser-tools-saved-links": {
         const stored = await chrome.storage.local.get("savedBrowserLinks");
         return { ok: true, links: Array.isArray(stored.savedBrowserLinks) ? stored.savedBrowserLinks : [] };
