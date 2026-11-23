@@ -13,7 +13,7 @@ const focusDefaults = {
 
 const featureDefaults = {
   openLastWorkspace: false,
-  saveBeforeRestore: true,
+  saveBeforeRestore: false,
   paletteShortcut: "Ctrl+Shift+K",
   updateTopics: ["vex", "xbox", "fortnite", "browser"],
   updateFrequency: "daily",
@@ -30,7 +30,7 @@ function cleanWorkspaceName(value) {
 function cleanSites(value) {
   if (!Array.isArray(value)) return [];
   return [...new Set(value.map((site) => String(site).trim().toLowerCase())
-    .filter((site) => site && !site.includes("/") && !site.includes(" ") && site.length <= 253))].slice(0, 100);
+    .filter((site) => site && !site.includes("/") && !/\\s/.test(site) && site.length <= 253))].slice(0, 100);
 }
 
 async function readWorkspaces() {
@@ -157,13 +157,17 @@ async function writeFocusSettings(input) {
 }
 
 function isScheduleActive(schedule, date = new Date()) {
-  if (!schedule?.enabled || !schedule.days?.includes(date.getDay())) return false;
+  if (!schedule?.enabled) return false;
   const [startHour, startMinute] = schedule.start.split(":").map(Number);
   const [endHour, endMinute] = schedule.end.split(":").map(Number);
   const now = date.getHours() * 60 + date.getMinutes();
   const start = startHour * 60 + startMinute;
   const end = endHour * 60 + endMinute;
-  return start === end ? false : start < end ? now >= start && now < end : now >= start || now < end;
+  if (start === end) return false;
+  if (start < end) return schedule.days?.includes(date.getDay()) && now >= start && now < end;
+  if (now >= start) return schedule.days?.includes(date.getDay());
+  const previousDay = (date.getDay() + 6) % 7;
+  return now < end && schedule.days?.includes(previousDay);
 }
 
 async function evaluateFocus() {
@@ -233,7 +237,7 @@ async function getDiagnostics() {
     pagePerformance,
     focusActive: focus.runtime.active,
     focusSiteCount: focus.settings.sites.length,
-    localStorageBytes: bytes,
+    extensionStorageBytes: bytes,
     recentErrors: errors,
     notificationsEnabled: settings[FEATURE_SETTINGS_KEY]?.browserNotifications === true,
   };
