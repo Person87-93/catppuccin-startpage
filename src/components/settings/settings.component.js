@@ -144,6 +144,7 @@ class AppearanceSettings extends Component {
             </section>
             <section class="settings-page" role="tabpanel" data-page="workspaces">
               <h3 class="page-heading">Keep tabs organized <span>WORKSPACES</span></h3>
+              <div class="control"><label for="workspace-default">Default workspace</label><select id="workspace-default"><option value="">None selected</option></select><p class="help">The command palette can restore this workspace with one command.</p></div>
               <div class="control"><label><span>Save before restoring</span><input id="workspace-save-before-restore" type="checkbox"></label><p class="help">When enabled, save the currently active workspace before opening another one.</p></div>
               <p class="help">Create, rename, restore, and delete workspaces from the browser dashboard. Restoring opens missing tabs and never closes your existing tabs.</p>
               <div class="control"><button type="button" id="open-browser-dashboard">Open browser dashboard</button></div>
@@ -225,6 +226,7 @@ class AppearanceSettings extends Component {
       elementHiding: { enabled: false, hiddenElementsByHost: {} },
       browserFeatures: {
         saveBeforeRestore: false,
+        defaultWorkspaceId: "",
         contextMenuEnabled: true,
         focus: { enabled: false, sites: [], schedule: { enabled: false, start: "09:00", end: "17:00", days: [1, 2, 3, 4, 5] } },
         updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "daily" },
@@ -427,6 +429,7 @@ class AppearanceSettings extends Component {
       this.browserFeatureSettings = {
         ...this.browserFeatureSettings,
         saveBeforeRestore: this.shadow.querySelector("#workspace-save-before-restore").checked,
+        defaultWorkspaceId: this.shadow.querySelector("#workspace-default").value,
         contextMenuEnabled: this.shadow.querySelector("#context-menu-enabled").checked,
         focus,
         updates: {
@@ -444,6 +447,7 @@ class AppearanceSettings extends Component {
       const requestId = `features-${Date.now()}`;
       window.postMessage({ type: "browser-tools-settings-set", requestId, settings: {
         saveBeforeRestore: this.browserFeatureSettings.saveBeforeRestore,
+        defaultWorkspaceId: this.browserFeatureSettings.defaultWorkspaceId,
         contextMenuEnabled: this.browserFeatureSettings.contextMenuEnabled,
         diagnosticsHistory: this.browserFeatureSettings.diagnosticsHistory,
         browserNotifications: this.browserFeatureSettings.notifications.browser,
@@ -455,6 +459,7 @@ class AppearanceSettings extends Component {
     const browserFeatures = settings.browserFeatures;
     this.browserFeatureSettings = browserFeatures;
     this.shadow.querySelector("#workspace-save-before-restore").checked = browserFeatures.saveBeforeRestore === true;
+    this.shadow.querySelector("#workspace-default").value = browserFeatures.defaultWorkspaceId || "";
     this.shadow.querySelector("#context-menu-enabled").checked = browserFeatures.contextMenuEnabled !== false;
     this.shadow.querySelector("#focus-schedule-enabled").checked = browserFeatures.focus.schedule.enabled === true;
     this.shadow.querySelector("#focus-start").value = browserFeatures.focus.schedule.start || "09:00";
@@ -470,7 +475,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelector("#browser-notifications").checked = browserFeatures.notifications.browser === true;
     this.shadow.querySelector("#diagnostics-history").checked = browserFeatures.diagnosticsHistory !== false;
     const featureControls = [
-      "#workspace-save-before-restore", "#context-menu-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
+      "#workspace-save-before-restore", "#workspace-default", "#context-menu-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
       ".focus-days input", "#update-vex", "#update-xbox", "#update-fortnite", "#update-browser",
       "#update-frequency", "#browser-notifications", "#diagnostics-history",
     ];
@@ -487,6 +492,7 @@ class AppearanceSettings extends Component {
     });
     window.postMessage({ type: "browser-tools-settings-set", requestId: `features-init-${Date.now()}`, settings: {
       saveBeforeRestore: browserFeatures.saveBeforeRestore,
+      defaultWorkspaceId: browserFeatures.defaultWorkspaceId,
       contextMenuEnabled: browserFeatures.contextMenuEnabled,
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
       browserNotifications: browserFeatures.notifications.browser,
