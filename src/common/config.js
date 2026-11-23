@@ -93,6 +93,17 @@ class Config {
     Reflect.set(target, prop, val);
     Object.assign(this, target);
 
+    // Keep imported settings in sync so they remain effective across reloads.
+    if (Object.prototype.hasOwnProperty.call(this.defaults, prop) && localStorage.getItem("configurationImport")) {
+      try {
+        const imported = JSON.parse(localStorage.getItem("configurationImport") || "{}");
+        imported[prop] = val;
+        localStorage.setItem("configurationImport", JSON.stringify(imported));
+      } catch {
+        localStorage.removeItem("configurationImport");
+      }
+    }
+
     this.save();
 
     return true;
@@ -117,7 +128,6 @@ class Config {
       else this[setting] = this.defaults[setting];
     });
 
-    if (localStorage.getItem("configurationImport")) localStorage.removeItem("configurationImport");
   }
 
   /**
