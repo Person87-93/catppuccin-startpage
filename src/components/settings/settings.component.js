@@ -151,6 +151,7 @@ class AppearanceSettings extends Component {
             </section>
             <section class="settings-page" role="tabpanel" data-page="focus">
               <h3 class="page-heading">Protect your focus <span>FOCUS MODE</span></h3>
+              <div class="control"><label><span>Enable manual focus mode</span><input id="focus-enabled" type="checkbox"></label></div>
               <div class="control"><label><span>Enable scheduled focus</span><input id="focus-schedule-enabled" type="checkbox"></label></div>
               <div class="control"><label for="focus-start">Start time</label><input id="focus-start" type="time" value="09:00"></div>
               <div class="control"><label for="focus-end">End time</label><input id="focus-end" type="time" value="17:00"></div>
@@ -417,7 +418,7 @@ class AppearanceSettings extends Component {
 
     const publishBrowserFeatureSettings = () => {
       const focus = {
-        enabled: false,
+        enabled: this.shadow.querySelector("#focus-enabled").checked,
         sites: this.shadow.querySelector("#focus-sites").value.split("\n").map((site) => site.trim()).filter(Boolean),
         schedule: {
           enabled: this.shadow.querySelector("#focus-schedule-enabled").checked,
@@ -478,6 +479,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelector("#workspace-save-before-restore").checked = browserFeatures.saveBeforeRestore === true;
     this.shadow.querySelector("#workspace-default").value = browserFeatures.defaultWorkspaceId || "";
     this.shadow.querySelector("#context-menu-enabled").checked = browserFeatures.contextMenuEnabled !== false;
+    this.shadow.querySelector("#focus-enabled").checked = browserFeatures.focus.enabled === true;
     this.shadow.querySelector("#focus-schedule-enabled").checked = browserFeatures.focus.schedule.enabled === true;
     this.shadow.querySelector("#focus-start").value = browserFeatures.focus.schedule.start || "09:00";
     this.shadow.querySelector("#focus-end").value = browserFeatures.focus.schedule.end || "17:00";
@@ -492,7 +494,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelector("#browser-notifications").checked = browserFeatures.notifications.browser === true;
     this.shadow.querySelector("#diagnostics-history").checked = browserFeatures.diagnosticsHistory !== false;
     const featureControls = [
-      "#workspace-save-before-restore", "#workspace-default", "#context-menu-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
+      "#workspace-save-before-restore", "#workspace-default", "#context-menu-enabled", "#focus-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
       ".focus-days input", "#update-vex", "#update-xbox", "#update-fortnite", "#update-browser",
       "#update-frequency", "#browser-notifications", "#diagnostics-history",
     ];
