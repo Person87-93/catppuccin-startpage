@@ -21,6 +21,7 @@ async function loadCommands() {
       if (name) await send("workspace-save", { name });
     } },
     { id: "focus-toggle", title: "Toggle focus mode", detail: "Turn your focus profile on or off", run: () => send("focus-toggle") },
+    { id: "focus-pause", title: "Pause focus mode for 15 minutes", detail: "Temporarily override manual and scheduled focus", run: () => send("focus-pause") },
     ...((workspaceResult?.workspaces || []).filter((item) => item.id === settingsResult?.settings?.defaultWorkspaceId).map((workspace) => ({ id: "default-workspace", title: `Restore default workspace: ${workspace.name}`, detail: `${workspace.tabs?.length || 0} saved tabs`, run: () => send("workspace-restore", { id: workspace.id }) }))),
     { id: "diagnostics", title: "View browser diagnostics", detail: "Tab counts, storage, workspaces, and extension status", run: () => chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html#diagnostics") }) },
     ...(workspaceResult?.workspaces || []).map((workspace) => ({
