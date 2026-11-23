@@ -112,8 +112,14 @@ async function updateAlarmSetup() {
   }
 }
 
-chrome.runtime.onInstalled.addListener(() => updateAlarmSetup().catch(recordDiagnosticError));
-chrome.runtime.onStartup.addListener(() => updateAlarmSetup().catch(recordDiagnosticError));
+chrome.runtime.onInstalled.addListener(() => {
+  updateAlarmSetup().catch(recordDiagnosticError);
+  syncRemoteFrequency().catch(recordDiagnosticError);
+});
+chrome.runtime.onStartup.addListener(() => {
+  updateAlarmSetup().catch(recordDiagnosticError);
+  syncRemoteFrequency().catch(recordDiagnosticError);
+});
 async function syncRemoteFrequency() {
   const settings = await readUpdateSettings();
   if (!validUpdateEndpoint(settings.url) || !settings.key) return;
