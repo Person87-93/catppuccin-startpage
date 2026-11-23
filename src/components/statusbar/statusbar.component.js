@@ -237,6 +237,7 @@ class Statusbar extends Component {
                     <online-status class="+ widget"></online-status>
                     <music-control class="+ widget"></music-control>
                     <productivity-tools class="+ widget"></productivity-tools>
+                    <browser-tools class="+ widget"></browser-tools>
                     <appearance-settings class="+ widget"></appearance-settings>
                 </div>
             </cols>

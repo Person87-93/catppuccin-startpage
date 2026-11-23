@@ -11,6 +11,7 @@ const components = {
   "music-control": MusicControl,
   "appearance-settings": AppearanceSettings,
   "productivity-tools": ProductivityTools,
+  "browser-tools": BrowserTools,
   "tabs-list": Tabs,
   "shortcut-tools": ShortcutTools,
 };

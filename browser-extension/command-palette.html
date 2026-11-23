@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Startpage command palette</title>
+  <link rel="stylesheet" href="tools.css">
+</head>
+<body class="palette-page">
+  <main class="palette-shell">
+    <div class="eyebrow">STARTPAGE / COMMANDS</div>
+    <h1>what do you want to do?</h1>
+    <input id="command-search" type="search" placeholder="search commands, workspaces, or saved links…" autocomplete="off" autofocus>
+    <div id="command-results" class="command-results" role="listbox"></div>
+    <footer><span>enter to run</span><span>esc to close this tab</span><a href="dashboard.html">open browser dashboard</a></footer>
+  </main>
+  <script src="command-palette.js"></script>
+</body>
+</html>
