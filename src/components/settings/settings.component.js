@@ -3,7 +3,7 @@ class AppearanceSettings extends Component {
   static storageKey = "startpageAppearance";
 
   imports() {
-    return [this.getResource("icons", "material"), this.getResource("fonts", "roboto")];
+    return [this.getResource("icons", "material"), this.getResource("fonts", "roboto"), this.getResource("fonts", "nunito"), this.getResource("fonts", "raleway")];
   }
 
   style() {
@@ -12,13 +12,13 @@ class AppearanceSettings extends Component {
       .settings-toggle i { font-size: 16pt; }
       .settings-dialog { width: min(430px, calc(100vw - 32px)); max-height: min(90vh, 700px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
       .settings-dialog::backdrop { background: rgb(0 0 0 / 55%); }
-      .panel { width: 100%; max-height: min(90vh, 700px); overflow: auto; padding: 22px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 16px 50px rgb(0 0 0 / 40%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Roboto', sans-serif; }
+      .panel { width: 100%; max-height: min(90vh, 700px); overflow: auto; padding: 22px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: var(--startpage-radius, 10px); background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent); color: ${CONFIG.palette.text}; box-shadow: 0 16px 50px rgb(0 0 0 / 40%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Nunito', 'Roboto', sans-serif; }
       .heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-      .heading h2 { font-size: 20px; }
+      .heading h2 { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; font: 700 22px 'Nunito', sans-serif; letter-spacing: -.02em; }
       .heading button { border: 0; background: none; color: ${CONFIG.palette.text}; cursor: pointer; }
       .control { margin: 16px 0; }
-      .section-title { margin: 24px 0 10px; padding-bottom: 7px; border-bottom: 1px solid ${CONFIG.palette.surface1}; color: ${CONFIG.palette.subtext1}; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-      .control label { display: flex; justify-content: space-between; margin-bottom: 7px; }
+      .section-title { margin: 24px 0 10px; padding-bottom: 7px; border-bottom: 1px solid ${CONFIG.palette.surface1}; color: ${CONFIG.palette.mauve}; font: 700 11px 'Raleway', 'Nunito', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+      .control label { display: flex; justify-content: space-between; margin-bottom: 7px; color: ${CONFIG.palette.text}; font-weight: 700; }
       .control input[type="range"] { width: 100%; accent-color: var(--startpage-accent, var(--accent)); }
       .control input[type="color"] { width: 44px; height: 30px; border: 0; background: transparent; cursor: pointer; }
       .control select { width: 100%; padding: 9px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 6px; background: ${CONFIG.palette.base}; color: ${CONFIG.palette.text}; }
@@ -30,7 +30,7 @@ class AppearanceSettings extends Component {
       .website-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
       .website-grid .control { margin: 8px 0; }
       .website-colour { display: flex; align-items: center; justify-content: space-between; }
-      .help { color: ${CONFIG.palette.subtext0}; font-size: 12px; line-height: 1.5; }
+      .help { color: ${CONFIG.palette.subtext1}; font-size: 12px; line-height: 1.6; }
       .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
       .actions button { border: 0; border-radius: 6px; padding: 9px 13px; background: ${CONFIG.palette.surface0}; color: ${CONFIG.palette.text}; cursor: pointer; }
     `;
