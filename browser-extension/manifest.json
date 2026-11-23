@@ -1,10 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Startpage Media Controls",
+  "name": "Catppuccin Startpage Tools",
   "version": "1.5.1",
-  "description": "Connects startpage media controls, website appearance, and recoverable per-site element hiding.",
-  "permissions": ["scripting", "storage"],
-  "host_permissions": ["http://*/*", "https://*/*"],
+  "description": "Connects the Catppuccin startpage with browser workspaces, focus mode, diagnostics, and website customisation.",
+  "permissions": [
+    "scripting",
+    "storage",
+    "contextMenus",
+    "tabGroups",
+    "alarms"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
   "background": {
     "service_worker": "service-worker.js"
   },
@@ -14,20 +23,52 @@
   },
   "commands": {
     "restore-hidden-elements": {
-      "suggested_key": { "default": "Alt+Shift+U" },
+      "suggested_key": {
+        "default": "Alt+Shift+U"
+      },
       "description": "Restore hidden elements on the current site"
+    },
+    "open-command-palette": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      },
+      "description": "Open the browser-wide command palette"
     }
   },
   "content_scripts": [
     {
-      "matches": ["https://person87-93.github.io/*", "http://localhost:8000/*"],
-      "js": ["page-bridge.js"],
+      "matches": [
+        "https://person87-93.github.io/*",
+        "http://localhost:8000/*"
+      ],
+      "js": [
+        "page-bridge.js"
+      ],
       "run_at": "document_start"
     },
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["site-customizer.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "site-customizer.js"
+      ],
       "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "focus-blocker.js"
+      ],
+      "run_at": "document_idle"
     }
+  ],
+  "optional_permissions": [
+    "notifications"
   ]
 }
