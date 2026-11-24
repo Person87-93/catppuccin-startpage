@@ -134,10 +134,11 @@ class Tabs extends Component {
       status-bar {
           bottom: -70px;
           height: 32px;
-          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
+          background: color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent) calc(100% - var(--startpage-glass-strength, 0%)), transparent);
+          border: 1px solid color-mix(in srgb, white var(--startpage-glass-edge, 0%), transparent);
           border-radius: var(--startpage-radius, 4px);
-          box-shadow: 0 10px 20px rgba(0, 0, 0, .25);
-          backdrop-filter: blur(var(--startpage-blur, 0px));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,var(--startpage-glass-highlight, 0)), 0 10px 20px rgba(0, 0, 0, .25);
+          backdrop-filter: blur(calc(var(--startpage-blur, 0px) + var(--startpage-glass-blur, 0px))) saturate(calc(100% + var(--startpage-glass-strength, 0%)));
       }
 
       #panels, #panels ul,
@@ -160,9 +161,10 @@ class Tabs extends Component {
           top: 0;
           bottom: 0;
           margin: auto;
-          box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
-          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
-          backdrop-filter: blur(var(--startpage-blur, 0px));
+          background: linear-gradient(145deg, rgba(255,255,255,var(--startpage-glass-highlight, 0)), transparent 28%), color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent) calc(100% - var(--startpage-glass-strength, 0%)), transparent);
+          border: 1px solid color-mix(in srgb, white var(--startpage-glass-edge, 0%), transparent);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,var(--startpage-glass-highlight, 0)), 0 12px 34px rgba(0, 0, 0, .22);
+          backdrop-filter: blur(calc(var(--startpage-blur, 0px) + var(--startpage-glass-blur, 0px))) saturate(calc(100% + var(--startpage-glass-strength, 0%)));
       }
 
       .categories {
@@ -179,7 +181,8 @@ class Tabs extends Component {
           width: 100%;
           height: 100%;
           right: 100%;
-          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
+          background-color: color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent) calc(100% - var(--startpage-glass-strength, 0%)), transparent);
+          backdrop-filter: blur(var(--startpage-glass-blur, 0px)) saturate(calc(100% + var(--startpage-glass-strength, 0%)));
           transition: all .6s;
           /* animation: scroll 25s ease-in-out infinite; */
       }
@@ -222,7 +225,7 @@ class Tabs extends Component {
           right: 0;
           width: 70%;
           height: 100%;
-          background: color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent);
+          background: color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.base} var(--startpage-opacity, 100%), transparent) calc(100% - var(--startpage-glass-strength, 0%)), transparent);
           padding: 5%;
           flex-wrap: wrap;
       }
@@ -241,8 +244,10 @@ class Tabs extends Component {
           display: inline-flex;
           align-items: center;
           padding: .4em .7em;
-          background: color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent);
+          background: linear-gradient(145deg, rgba(255,255,255,var(--startpage-glass-highlight, 0)), transparent 35%), color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.mantle} var(--startpage-opacity, 100%), transparent) calc(100% - var(--startpage-glass-strength, 0%)), transparent);
+          border: 1px solid color-mix(in srgb, white var(--startpage-glass-edge, 0%), transparent);
           box-shadow: 0 4px ${CONFIG.palette.mantle}, 0 5px 10px rgb(0 0 0 / 20%);
+          backdrop-filter: blur(var(--startpage-glass-blur, 0px)) saturate(calc(100% + var(--startpage-glass-strength, 0%)));
           border-radius: calc(var(--startpage-radius, 10px) / 2);
           margin-bottom: .7em;
       }

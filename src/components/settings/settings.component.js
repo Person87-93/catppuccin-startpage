@@ -12,7 +12,7 @@ class AppearanceSettings extends Component {
       .settings-toggle i { font-size: 16pt; }
       .settings-dialog { width: min(790px, calc(100vw - 32px)); max-height: min(92vh, 820px); margin: auto; padding: 0; overflow: visible; border: 0; background: transparent; color: ${CONFIG.palette.text}; }
       .settings-dialog::backdrop { background: rgb(10 10 18 / 68%); backdrop-filter: blur(7px); }
-      .panel { width: 100%; max-height: min(92vh, 820px); overflow: auto; box-sizing: border-box; padding: 26px; border: 1px solid ${CONFIG.palette.surface1}; border-radius: 18px; background: linear-gradient(145deg, color-mix(in srgb, ${CONFIG.palette.mantle} 97%, ${CONFIG.palette.mauve}), color-mix(in srgb, ${CONFIG.palette.base} 96%, ${CONFIG.palette.blue})); color: ${CONFIG.palette.text}; box-shadow: 0 22px 70px rgb(0 0 0 / 48%); backdrop-filter: blur(var(--startpage-blur, 0px)); font: 400 14px 'Nunito', 'Roboto', sans-serif; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+      .panel { width: 100%; max-height: min(92vh, 820px); overflow: auto; box-sizing: border-box; padding: 26px; border: 1px solid color-mix(in srgb, white var(--startpage-glass-edge, 0%), ${CONFIG.palette.surface1}); border-radius: 18px; background: linear-gradient(145deg, color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.mantle} 88%, ${CONFIG.palette.mauve} 12%) var(--startpage-glass-opacity, 97%), transparent), color-mix(in srgb, color-mix(in srgb, ${CONFIG.palette.base} 88%, ${CONFIG.palette.blue} 12%) var(--startpage-glass-opacity, 97%), transparent)); color: ${CONFIG.palette.text}; box-shadow: inset 0 1px 0 rgba(255,255,255,var(--startpage-glass-highlight, 0)), 0 22px 70px rgb(0 0 0 / 48%); backdrop-filter: blur(calc(var(--startpage-blur, 0px) + var(--startpage-glass-blur, 0px))) saturate(calc(100% + var(--startpage-glass-strength, 0%))); font: 400 14px 'Nunito', 'Roboto', sans-serif; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
       .heading { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 4px 0 16px; border-bottom: 1px solid ${CONFIG.palette.surface1}; }
       .heading h2 { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; font: 800 26px 'Nunito', sans-serif; letter-spacing: -.035em; margin: 0; }
       .heading::after { content: "PERSONALIZE YOUR SPACE"; margin-left: auto; margin-right: 18px; color: ${CONFIG.palette.subtext0}; font: 700 10px 'Raleway', sans-serif; letter-spacing: .16em; }
@@ -96,6 +96,7 @@ class AppearanceSettings extends Component {
               <div class="control"><label for="transparency">Panel transparency <output data-value="transparency"></output></label><input id="transparency" type="range" min="55" max="100" value="100"></div>
           <div class="control"><label for="roundness">Corner roundness <output data-value="roundness"></output></label><input id="roundness" type="range" min="0" max="28" value="10"></div>
           <div class="control"><label for="blur">Background blur <output data-value="blur"></output></label><input id="blur" type="range" min="0" max="24" value="0"></div>
+              <div class="control"><label for="liquid-glass">Liquid Glass intensity <output data-value="liquid-glass"></output></label><input id="liquid-glass" type="range" min="0" max="100" value="46"><small class="help">Adjust the translucent tint, soft blur, colour and edge highlights across the startpage.</small></div>
           <div class="control"><label for="dim">Wallpaper dimming <output data-value="dim"></output></label><input id="dim" type="range" min="0" max="70" value="0"></div>
           <div class="control"><label for="panel-width">Panel width <output data-value="panel-width"></output></label><input id="panel-width" type="range" min="75" max="100" value="94"></div>
           <div class="control"><label for="text-scale">Link text size <output data-value="text-scale"></output></label><input id="text-scale" type="range" min="80" max="130" value="100"></div>
@@ -175,6 +176,7 @@ class AppearanceSettings extends Component {
               <div class="control"><label><span>VEX & REC Foundation</span><input id="update-vex" type="checkbox"></label></div>
               <div class="control"><label><span>Xbox sales & releases</span><input id="update-xbox" type="checkbox"></label></div>
               <div class="control"><label><span>Fortnite updates</span><input id="update-fortnite" type="checkbox"></label></div>
+              <div class="control"><label><span>Google & Chrome releases</span><input id="update-google" type="checkbox"></label></div>
               <div class="control"><label><span>Browser & extension news</span><input id="update-browser" type="checkbox"></label></div>
               <div class="control"><label for="update-frequency">Collection frequency</label><select id="update-frequency"><option value="6h">Every 6 hours</option><option value="12h">Every 12 hours</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select></div>
               <div class="control"><label for="update-api-url">Google Apps Script web app URL</label><input id="update-api-url" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
@@ -210,6 +212,7 @@ class AppearanceSettings extends Component {
       transparency: 100,
       roundness: 10,
       blur: 0,
+      liquidGlass: 46,
       dim: 0,
       panelWidth: 94,
       textScale: 100,
@@ -233,7 +236,7 @@ class AppearanceSettings extends Component {
         defaultWorkspaceId: "",
         contextMenuEnabled: true,
         focus: { enabled: false, sites: [], schedule: { enabled: false, start: "09:00", end: "17:00", days: [1, 2, 3, 4, 5] } },
-        updates: { topics: ["vex", "xbox", "fortnite", "browser"], frequency: "6h", apiUrl: "", apiKey: "" },
+        updates: { topics: ["vex", "xbox", "fortnite", "google", "browser"], frequency: "6h", apiUrl: "", apiKey: "" },
         notifications: { browser: false, email: false },
         diagnosticsHistory: true,
       },
@@ -288,7 +291,7 @@ class AppearanceSettings extends Component {
         activateCategory(categoryButtons[next].dataset.category);
       });
     });
-    const controls = ["transparency", "roundness", "blur", "dim", "panel-width", "text-scale", "spacing", "accent"];
+    const controls = ["transparency", "roundness", "blur", "liquid-glass", "dim", "panel-width", "text-scale", "spacing", "accent"];
     const websiteControls = ["websites-background", "websites-text", "websites-accent", "websites-border", "websites-opacity", "websites-blur", "websites-font", "websites-spacing"];
     const rulesInput = this.shadow.querySelector("#hidden-rules");
     const websiteStatus = this.shadow.querySelector(".website-status");
@@ -360,6 +363,7 @@ class AppearanceSettings extends Component {
       const transparency = Math.min(100, Math.max(55, Number(settings.transparency)));
       const roundness = Math.min(28, Math.max(0, Number(settings.roundness)));
       const blur = Math.min(24, Math.max(0, Number(settings.blur)));
+      const liquidGlass = Math.min(100, Math.max(0, Number(settings["liquid-glass"])));
       const dim = Math.min(70, Math.max(0, Number(settings.dim)));
       const panelWidth = Math.min(100, Math.max(75, Number(settings["panel-width"])));
       const textScale = Math.min(130, Math.max(80, Number(settings["text-scale"])));
@@ -386,6 +390,11 @@ class AppearanceSettings extends Component {
       root.style.setProperty("--startpage-opacity", `${transparency}%`);
       root.style.setProperty("--startpage-radius", `${roundness}px`);
       root.style.setProperty("--startpage-blur", `${blur}px`);
+      root.style.setProperty("--startpage-glass-strength", `${(liquidGlass * 0.58).toFixed(1)}%`);
+      root.style.setProperty("--startpage-glass-opacity", `${(97 - liquidGlass * 0.28).toFixed(1)}%`);
+      root.style.setProperty("--startpage-glass-blur", `${(liquidGlass * 0.16).toFixed(1)}px`);
+      root.style.setProperty("--startpage-glass-highlight", (liquidGlass * 0.0028).toFixed(3));
+      root.style.setProperty("--startpage-glass-edge", `${(liquidGlass * 0.34).toFixed(1)}%`);
       root.style.setProperty("--startpage-wallpaper-dim", String(dim / 100));
       root.style.setProperty("--startpage-panel-width", `${panelWidth}%`);
       root.style.setProperty("--startpage-text-scale", String(textScale / 100));
@@ -398,13 +407,14 @@ class AppearanceSettings extends Component {
       this.shadow.querySelector('[data-value="transparency"]').textContent = `${transparency}%`;
       this.shadow.querySelector('[data-value="roundness"]').textContent = `${roundness}px`;
       this.shadow.querySelector('[data-value="blur"]').textContent = `${blur}px`;
+      this.shadow.querySelector('[data-value="liquid-glass"]').textContent = `${liquidGlass}%`;
       this.shadow.querySelector('[data-value="dim"]').textContent = `${dim}%`;
       this.shadow.querySelector('[data-value="panel-width"]').textContent = `${panelWidth}%`;
       this.shadow.querySelector('[data-value="websites-opacity"]').textContent = `${websiteAppearance.opacity}%`;
       this.shadow.querySelector('[data-value="websites-blur"]').textContent = `${websiteAppearance.blur}px`;
       this.shadow.querySelector('[data-value="text-scale"]').textContent = `${textScale}%`;
       const localBrowserFeatures = { ...this.browserFeatureSettings, updates: { ...this.browserFeatureSettings.updates, apiKey: "" } };
-      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ transparency, roundness, blur, dim, panelWidth, textScale, spacing: settings.spacing, accent: settings.accent, widgets, websiteAppearance, elementHiding, browserFeatures: localBrowserFeatures }));
+      localStorage.setItem(AppearanceSettings.storageKey, JSON.stringify({ transparency, roundness, blur, liquidGlass, dim, panelWidth, textScale, spacing: settings.spacing, accent: settings.accent, widgets, websiteAppearance, elementHiding, browserFeatures: localBrowserFeatures }));
       if (publish) {
         const serializedWebsiteAppearance = JSON.stringify(websiteAppearance);
         if (serializedWebsiteAppearance !== lastPublishedWebsiteAppearance) {
@@ -450,7 +460,7 @@ class AppearanceSettings extends Component {
         contextMenuEnabled: this.shadow.querySelector("#context-menu-enabled").checked,
         focus,
         updates: {
-          topics: ["vex", "xbox", "fortnite", "browser"].filter((topic) => this.shadow.querySelector("#update-" + topic).checked),
+          topics: ["vex", "xbox", "fortnite", "google", "browser"].filter((topic) => this.shadow.querySelector("#update-" + topic).checked),
           frequency: this.shadow.querySelector("#update-frequency").value,
           apiUrl: this.shadow.querySelector("#update-api-url").value.trim(),
           apiKey: this.shadow.querySelector("#update-api-key").value.trim(),
@@ -510,7 +520,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelectorAll(".focus-days input").forEach((input) => {
       input.checked = (browserFeatures.focus.schedule.days || []).includes(Number(input.value));
     });
-    ["vex", "xbox", "fortnite", "browser"].forEach((topic) => {
+    ["vex", "xbox", "fortnite", "google", "browser"].forEach((topic) => {
       this.shadow.querySelector("#update-" + topic).checked = (browserFeatures.updates.topics || []).includes(topic);
     });
     this.shadow.querySelector("#update-frequency").value = browserFeatures.updates.frequency || "6h";
@@ -518,7 +528,7 @@ class AppearanceSettings extends Component {
     this.shadow.querySelector("#diagnostics-history").checked = browserFeatures.diagnosticsHistory !== false;
     const featureControls = [
       "#workspace-save-before-restore", "#workspace-default", "#context-menu-enabled", "#focus-enabled", "#focus-schedule-enabled", "#focus-start", "#focus-end", "#focus-sites",
-      ".focus-days input", "#update-vex", "#update-xbox", "#update-fortnite", "#update-browser",
+      ".focus-days input", "#update-vex", "#update-xbox", "#update-fortnite", "#update-google", "#update-browser",
       "#update-frequency", "#update-api-url", "#update-api-key", "#browser-notifications", "#diagnostics-history",
     ];
     featureControls.forEach((selector) => this.shadow.querySelectorAll(selector).forEach((control) => {
@@ -526,8 +536,11 @@ class AppearanceSettings extends Component {
       control.addEventListener("input", publishBrowserFeatureSettings);
     }));
     const openDashboard = () => window.postMessage({ type: "browser-tools-open-dashboard", requestId: `dashboard-${Date.now()}` }, location.origin);
-    ["#open-browser-dashboard", "#open-focus-dashboard", "#open-notification-dashboard", "#open-diagnostics-dashboard", "#open-update-dashboard"].forEach((selector) => {
+    ["#open-browser-dashboard", "#open-focus-dashboard", "#open-notification-dashboard", "#open-diagnostics-dashboard"].forEach((selector) => {
       this.shadow.querySelector(selector).addEventListener("click", openDashboard);
+    });
+    this.shadow.querySelector("#open-update-dashboard").addEventListener("click", () => {
+      window.postMessage({ type: "browser-tools-open-updates", requestId: `updates-${Date.now()}` }, location.origin);
     });
     this.shadow.querySelector("#open-shortcut-settings").addEventListener("click", () => {
       window.postMessage({ type: "browser-tools-open-shortcut-settings", requestId: `shortcuts-${Date.now()}` }, location.origin);
@@ -538,12 +551,12 @@ class AppearanceSettings extends Component {
       contextMenuEnabled: browserFeatures.contextMenuEnabled,
       diagnosticsHistory: browserFeatures.diagnosticsHistory,
       browserNotifications: browserFeatures.notifications.browser,
-      updateTopics: browserFeatures.updates.topics || ["vex", "xbox", "fortnite", "browser"],
+      updateTopics: browserFeatures.updates.topics || ["vex", "xbox", "fortnite", "google", "browser"],
       updateFrequency: browserFeatures.updates.frequency || "6h",
     } }, location.origin);
     window.postMessage({ type: "browser-tools-settings-get", requestId: updateConfigRequestId }, location.origin);
     window.postMessage({ type: "browser-tools-focus-set", requestId: `focus-init-${Date.now()}`, settings: browserFeatures.focus }, location.origin);
-    const settingIds = { "panel-width": "panelWidth", "text-scale": "textScale" };
+    const settingIds = { "panel-width": "panelWidth", "text-scale": "textScale", "liquid-glass": "liquidGlass" };
     controls.forEach((id) => { this.shadow.querySelector(`#${id}`).value = settings[settingIds[id] || id]; });
     Object.entries(settings.widgets).forEach(([name, visible]) => {
       this.shadow.querySelector(`#show-${name}`).checked = visible;

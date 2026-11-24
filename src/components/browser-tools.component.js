@@ -7,7 +7,8 @@ class BrowserTools extends Component {
   style() {
     return `
       :host { display: inline-flex; align-items: center; height: 100%; color: ${CONFIG.palette.text}; }
-      button { display: inline-flex; align-items: center; gap: 6px; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+      .tools { display: inline-flex; align-items: center; height: 100%; }
+      button { display: inline-flex; align-items: center; gap: 5px; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
       button:hover { color: ${CONFIG.palette.lavender || CONFIG.palette.mauve}; }
       i { font-size: 17px; }
       .label { font-size: 12px; }
@@ -15,15 +16,15 @@ class BrowserTools extends Component {
   }
 
   template() {
-    return `<button type="button" aria-label="Open browser dashboard" title="Workspaces, focus mode, and diagnostics"><i class="ti ti-layout-dashboard"></i><span class="label">browser</span></button>`;
+    return `<div class="tools"><button type="button" data-page="updates" aria-label="Open updates" title="News grouped by Fortnite, Google, Xbox, and more"><i class="ti ti-news"></i><span class="label">updates</span></button></div>`;
   }
 
   connectedCallback() {
     this.render().then(() => {
-      this.shadow.querySelector("button").addEventListener("click", () => {
+      this.shadow.querySelector('[data-page="updates"]').addEventListener("click", () => {
         window.postMessage({
-          type: "browser-tools-open-dashboard",
-          requestId: `dashboard-${Date.now()}`,
+          type: "browser-tools-open-updates",
+          requestId: `updates-${Date.now()}`,
         }, location.origin);
       });
     });
