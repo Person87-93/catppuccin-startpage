@@ -168,3 +168,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   });
   return true;
 });
+
+
+// Read-only homepage request. The API key remains in extension-local storage.
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type !== "startpage-digest-get") return false;
+  let trusted = false;
+  try {
+    const url = new URL(sender.url || "");
+    trusted = (url.hostname === "person87-93.github.io" && url.pathname.startsWith("/catppuccin-startpage"))
+      || (url.hostname === "localhost" && url.port === "8000");
+  } catch {}
+  if (!trusted) return false;
+  updateApiRequest("digest").then(sendResponse).catch(error => {
+    sendResponse({ ok: false, error: error.message || "Could not read the daily digest." });
+  });
+  return true;
+});

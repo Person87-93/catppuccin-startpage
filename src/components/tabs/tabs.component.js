@@ -348,6 +348,7 @@ class Tabs extends Component {
   template() {
     return `
       <div id="links" class="-">
+        <daily-digest></daily-digest>
 
         <div id="panels">
           <div class="categories">

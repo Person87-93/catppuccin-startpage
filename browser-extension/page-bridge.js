@@ -7,6 +7,18 @@
     const message = event.data;
     if (event.source !== window || event.origin !== location.origin) return;
 
+    if (message?.type === "startpage-digest-get" && typeof message.requestId === "string") {
+      chrome.runtime.sendMessage({ type: "startpage-digest-get" }, (response) => {
+        const error = chrome.runtime.lastError?.message;
+        window.postMessage({
+          type: "startpage-digest-response",
+          requestId: message.requestId,
+          response: error ? { ok: false, error } : response,
+        }, location.origin);
+      });
+      return;
+    }
+
     if (message?.type === "startpage-site-settings-get" && typeof message.requestId === "string") {
       chrome.runtime.sendMessage({ type: "startpage-site-settings-get" }, (response) => {
         const error = chrome.runtime.lastError?.message;

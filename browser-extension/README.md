@@ -56,3 +56,10 @@ The starter source list includes Xbox Wire, Chrome Releases, Chrome for Develope
 The collector stores article metadata and original links, deduplicates URLs, and keeps the newest 500 items. Its default schedule is every six hours; choose six hours, twelve hours, daily, or weekly in **Settings → Updates**. You can add, disable, and remove sources in the browser dashboard. Category preferences filter what the extension displays.
 
 Browser notifications are optional and require the extension's notification permission. Email digests are not implemented yet. The Apps Script project must be created and deployed from your own Google account; the repository cannot authorize or deploy it on your behalf.
+
+
+## Daily digest
+
+The startpage includes a compact daily digest control in the upper-right corner. It reads the latest manually curated snapshot from the existing Google Sheets update-center spreadsheet. It does not collect information, change tasks, or write to Google Sheets when opened. The extension service worker keeps the Apps Script API key in chrome.storage.local; the homepage bridge sends only a digest-read request and never receives the key itself.
+
+Configure the existing Apps Script /exec URL and API key under the extension dashboard's Update center section. Open the startpage and select daily digest. The widget shows the latest overview, priority, next event, tasks, project updates, and recent RSS items. It keeps a local read cache so the last displayed snapshot can remain visible if the endpoint is temporarily unavailable.

@@ -66,3 +66,23 @@ Apps Script has execution, URL fetch, and spreadsheet quotas. Keep the source li
 - **A feed is failing:** open its URL in a browser and confirm it returns RSS/Atom XML. Disable or remove unavailable feeds.
 
 The backend must be deployed from your own Google account. The repository cannot deploy or authorize a Google Apps Script project on your behalf.
+
+
+## Daily digest (Google Sheets is the source of truth)
+
+The homepage has an optional daily digest panel. It reads the Digest, Tasks, Calendar, and Projects tabs from the same spreadsheet used by the update center, and it also displays a short slice of the existing Updates feed. The widget is read-only: opening or refreshing it never starts a collector run and never edits spreadsheet cells.
+
+### Sheet tabs and columns
+
+- Digest: date, generatedAt, summary, topPriority, priorityReason, nextEvent, projectHighlight, status, lastSuccessfulUpdate
+- Tasks: id, title, dueAt, priority, status, source, url, updatedAt
+- Calendar: id, title, startAt, endAt, location, url, source
+- Projects: id, project, update, source, url, updatedAt, priority
+
+Use ISO 8601 timestamps for date/time cells. Keep the latest digest as the last non-empty row in Digest; task, calendar, and project rows can be replaced on each digest refresh. The endpoint returns up to 100 rows from each structured tab, omits completed/cancelled tasks, and filters past calendar events when timestamps can be parsed.
+
+### Data flow
+
+ChatGPT gathers information from connected personal services and writes the results into the appropriate Google Sheets cells. That gathering step is separate from the extension and is intentionally not triggered by the homepage. The homepage only reads the latest snapshot. If a gathering session fails, the previous spreadsheet data and the browser's last cached snapshot remain available.
+
+After updating this Apps Script project, run setupUpdateCenter() once if the new tabs do not already exist, then deploy a new web-app version. Keep the same /exec URL and API key if the project properties already contain them. The digest GET action uses the same API-key check as the existing feed endpoint.

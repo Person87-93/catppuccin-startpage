@@ -15,6 +15,10 @@ const UPDATE_SHEET_KEY = "UPDATE_CENTER_SPREADSHEET_ID";
 const UPDATE_API_KEY = "UPDATE_CENTER_API_KEY";
 const SOURCE_HEADERS = ["id", "name", "category", "type", "url", "enabled", "pathPrefix", "keywords", "lastChecked", "lastError"];
 const UPDATE_HEADERS = ["id", "sourceId", "sourceName", "category", "title", "url", "summary", "publishedAt", "discoveredAt"];
+const DIGEST_HEADERS = ["date", "generatedAt", "summary", "topPriority", "priorityReason", "nextEvent", "projectHighlight", "status", "lastSuccessfulUpdate"];
+const TASK_HEADERS = ["id", "title", "dueAt", "priority", "status", "source", "url", "updatedAt"];
+const CALENDAR_HEADERS = ["id", "title", "startAt", "endAt", "location", "url", "source"];
+const PROJECT_HEADERS = ["id", "project", "update", "source", "url", "updatedAt", "priority"];
 
 const DEFAULT_SOURCES = [
   ["xbox-wire", "Xbox Wire", "xbox", "rss", "https://news.xbox.com/en-us/feed/", true, "", "", "", ""],
@@ -40,6 +44,10 @@ function setupUpdateCenter() {
 
   ensureSheet_(spreadsheet, "Sources", SOURCE_HEADERS, DEFAULT_SOURCES);
   ensureSheet_(spreadsheet, "Updates", UPDATE_HEADERS, []);
+  ensureSheet_(spreadsheet, "Digest", DIGEST_HEADERS, []);
+  ensureSheet_(spreadsheet, "Tasks", TASK_HEADERS, []);
+  ensureSheet_(spreadsheet, "Calendar", CALENDAR_HEADERS, []);
+  ensureSheet_(spreadsheet, "Projects", PROJECT_HEADERS, []);
   let apiKey = props.getProperty(UPDATE_API_KEY);
   if (!apiKey) {
     apiKey = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
@@ -65,6 +73,7 @@ function doGet(event) {
     authorize_(event && event.parameter && event.parameter.key);
     const action = String(event.parameter.action || "feed");
     if (action === "feed" || action === "status") return json_(getFeed_());
+    if (action === "digest") return json_(getDigest_());
     if (action === "sources") return json_({ ok: true, sources: readSources_(), lastRun: getLastRun_() });
     return json_({ ok: false, error: "Unknown action." });
   } catch (error) {
@@ -268,6 +277,45 @@ function getFeed_() {
     discoveredAt: String(row[8] || "")
   }));
   return { ok: true, updates, sources: readSources_(), lastRun: getLastRun_(), frequency: PropertiesService.getScriptProperties().getProperty("UPDATE_CENTER_FREQUENCY") || "6h" };
+}
+
+
+function getDigest_() {
+  const spreadsheet = getSpreadsheet_();
+  const digestSheet = spreadsheet.getSheetByName("Digest");
+  const digestRow = digestSheet && digestSheet.getLastRow() > 1
+    ? digestSheet.getRange(digestSheet.getLastRow(), 1, 1, DIGEST_HEADERS.length).getDisplayValues()[0] : [];
+  const tasks = readDigestRows_(spreadsheet, "Tasks", TASK_HEADERS.length, 100)
+    .map(row => ({ id: row[0], title: row[1], dueAt: row[2], priority: row[3], status: row[4], source: row[5], url: row[6], updatedAt: row[7] }))
+    .filter(item => item.title && !/^(done|complete|completed|cancelled|canceled)$/i.test(item.status || ""));
+  const now = Date.now();
+  const calendar = readDigestRows_(spreadsheet, "Calendar", CALENDAR_HEADERS.length, 100)
+    .map(row => ({ id: row[0], title: row[1], startAt: row[2], endAt: row[3], location: row[4], url: row[5], source: row[6] }))
+    .filter(item => item.title && (!Date.parse(item.startAt) || Date.parse(item.startAt) >= now))
+    .sort((a, b) => (Date.parse(a.startAt) || 0) - (Date.parse(b.startAt) || 0)).slice(0, 8);
+  const projects = readDigestRows_(spreadsheet, "Projects", PROJECT_HEADERS.length, 100)
+    .map(row => ({ id: row[0], project: row[1], update: row[2], source: row[3], url: row[4], updatedAt: row[5], priority: row[6] }))
+    .filter(item => item.project || item.update).slice(-8).reverse();
+  const feed = getFeed_();
+  return {
+    ok: true,
+    digest: {
+      date: digestRow[0] || "", generatedAt: digestRow[1] || "", summary: digestRow[2] || "",
+      topPriority: digestRow[3] || "", priorityReason: digestRow[4] || "", nextEvent: digestRow[5] || "",
+      projectHighlight: digestRow[6] || "", status: digestRow[7] || "empty",
+      lastSuccessfulUpdate: digestRow[8] || ""
+    },
+    tasks: tasks.slice(0, 8), calendar, projects,
+    news: (feed.updates || []).slice(0, 6), servedAt: new Date().toISOString()
+  };
+}
+
+function readDigestRows_(spreadsheet, sheetName, columnCount, maximum) {
+  const sheet = spreadsheet.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() <= 1) return [];
+  const count = Math.min(sheet.getLastRow() - 1, maximum);
+  return sheet.getRange(sheet.getLastRow() - count + 1, 1, count, columnCount)
+    .getDisplayValues().filter(row => row.some(value => String(value || "").trim()));
 }
 
 function readSources_() {
