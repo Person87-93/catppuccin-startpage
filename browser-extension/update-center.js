@@ -172,7 +172,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Read-only homepage request. The API key remains in extension-local storage.
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.type !== "startpage-digest-get") return false;
+  if (!["startpage-digest-get", "startpage-digest-refresh"].includes(message?.type)) return false;
   let trusted = false;
   try {
     const url = new URL(sender.url || "");
@@ -180,8 +180,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       || (url.hostname === "localhost" && url.port === "8000");
   } catch {}
   if (!trusted) return false;
-  updateApiRequest("digest").then(sendResponse).catch(error => {
-    sendResponse({ ok: false, error: error.message || "Could not read the daily digest." });
+  (async () => {
+    if (message.type === "startpage-digest-refresh") {
+      await updateApiRequest("collect-now", {});
+      await refreshUpdateFeed(false);
+    }
+    return await updateApiRequest("digest");
+  })().then(sendResponse).catch(error => {
+    recordDiagnosticError(error);
+    sendResponse({ ok: false, error: error.message || "Could not refresh the daily digest." });
   });
   return true;
 });

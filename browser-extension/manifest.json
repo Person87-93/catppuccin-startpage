@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Catppuccin Startpage Tools",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Adds browser workspaces, focus mode, update feeds, diagnostics, and website customisation to the Catppuccin startpage.",
   "permissions": [
     "scripting",

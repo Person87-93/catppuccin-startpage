@@ -46,20 +46,21 @@ class DailyDigest extends Component {
         this.panel.hidden = true;
         this.toggle.setAttribute("aria-expanded", "false");
       });
-      this.shadow.querySelector("[data-refresh]").addEventListener("click", () => this.load());
+      this.refreshButton = this.shadow.querySelector("[data-refresh]");
+      this.refreshButton.addEventListener("click", () => this.load(true));
       try {
         const cached = JSON.parse(localStorage.getItem(DailyDigest.cacheKey) || "null");
         if (cached) this.renderData(cached, "cached");
       } catch {}
     });
   }
-  requestDigest() {
+  requestDigest(refresh = false) {
     return new Promise((resolve, reject) => {
       const requestId = window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : String(Date.now());
       const timeout = window.setTimeout(() => {
         window.removeEventListener("message", listener);
         reject(new Error("Extension did not respond. Check that it is enabled on this startpage."));
-      }, 12000);
+      }, refresh ? 60000 : 12000);
       const listener = event => {
         const message = event.data;
         if (event.source !== window || event.origin !== location.origin || message?.type !== "startpage-digest-response" || message.requestId !== requestId) return;
@@ -69,13 +70,14 @@ class DailyDigest extends Component {
         else resolve(message.response);
       };
       window.addEventListener("message", listener);
-      window.postMessage({ type: "startpage-digest-get", requestId }, location.origin);
+      window.postMessage({ type: refresh ? "startpage-digest-refresh" : "startpage-digest-get", requestId }, location.origin);
     });
   }
-  async load() {
-    this.status.textContent = "loading";
+  async load(refresh = false) {
+    if (this.refreshButton) this.refreshButton.disabled = true;
+    this.status.textContent = refresh ? "refreshing" : "loading";
     try {
-      const data = await this.requestDigest();
+      const data = await this.requestDigest(refresh);
       localStorage.setItem(DailyDigest.cacheKey, JSON.stringify(data));
       this.renderData(data, "live");
     } catch (error) {
@@ -86,7 +88,14 @@ class DailyDigest extends Component {
         note.className = "empty";
         note.textContent = error.message + " Previously cached information remains available when present.";
         this.body.append(note);
+      } else {
+        const warning = document.createElement("p");
+        warning.className = "status";
+        warning.textContent = "refresh failed: " + error.message;
+        this.body.append(warning);
       }
+    } finally {
+      if (this.refreshButton) this.refreshButton.disabled = false;
     }
   }
   renderData(data, mode) {

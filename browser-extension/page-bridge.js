@@ -7,8 +7,8 @@
     const message = event.data;
     if (event.source !== window || event.origin !== location.origin) return;
 
-    if (message?.type === "startpage-digest-get" && typeof message.requestId === "string") {
-      chrome.runtime.sendMessage({ type: "startpage-digest-get" }, (response) => {
+    if (["startpage-digest-get", "startpage-digest-refresh"].includes(message?.type) && typeof message.requestId === "string") {
+      chrome.runtime.sendMessage({ type: message.type }, (response) => {
         const error = chrome.runtime.lastError?.message;
         window.postMessage({
           type: "startpage-digest-response",
